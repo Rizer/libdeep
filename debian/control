@@ -1,0 +1,25 @@
+Source: libdeep
+Priority: extra
+Maintainer: Bob Mottram <bob@sluggish.dyndns.org>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Section: libs
+Homepage: https://launchpad.net/libdeep
+Vcs-Bzr: https://code.launchpad.net/libdeep
+Vcs-Browser: http://bazaar.launchpad.net/~fuzzgun/libdeep/trunk/files
+
+Package: libdeep0-dev
+Section: libdevel
+Architecture: any
+Depends: libdeep0 (= ${binary:Version}), gnuplot
+Description: Headers and manual for the libdeep deep learning library
+ The aim of libdeep is to make using deep learning easy to include
+ within any C/C++ application.
+
+Package: libdeep0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, gnuplot
+Description: Library for genetic programming
+ The aim of libdeep is to make using deep learning easy to include
+ within any C/C++ application.
