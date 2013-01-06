@@ -27,8 +27,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef DEEP_H
-#define DEEP_H
+#ifndef DEEPLEARN_H
+#define DEEPLEARN_H
 
 #include <stdio.h>
 #include <stdlib.h>

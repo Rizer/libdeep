@@ -27,8 +27,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef BACKPROP_H
-#define BACKPROP_H
+#ifndef DEEPLEARN_BACKPROP_H
+#define DEEPLEARN_BACKPROP_H
 
 #include <stdio.h>
 #include <stdlib.h>
