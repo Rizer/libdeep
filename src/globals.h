@@ -1,0 +1,6 @@
+#ifndef DEEPLEARN_GLOBALS_H
+#define DEEPLEARN_GLOBALS_H
+
+#define DEEPLEARN_TEMP_DIRECTORY "/tmp/"
+
+#endif

@@ -67,5 +67,9 @@ void bp_update(bp * net);
 void bp_create_autocoder(bp * net, int hidden_layer, bp * autocoder);
 void bp_pretrain(bp * net, bp * autocoder, int hidden_layer);
 void bp_update_from_autocoder(bp * net, bp * autocoder, int hidden_layer);
+int bp_save(FILE * fp, bp * net);
+int bp_load(FILE * fp, bp * net,
+			unsigned int * random_seed);
+int bp_compare(bp * net1, bp * net2);
 
 #endif

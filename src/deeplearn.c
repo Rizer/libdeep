@@ -136,9 +136,74 @@ void deeplearn_set_output(deeplearn * learner, int index, float value)
 	bp_set_output(learner->net, index, value);
 }
 
-/* returns teh value of an output */
+/* returns the value of an output */
 float deeplearn_get_output(deeplearn * learner, int index)
 {
 	return bp_get_output(learner->net, index);
 }
 
+/* save to file */
+int deeplearn_save(FILE * fp, deeplearn * learner)
+{
+	int retval,val;
+
+	retval = fwrite(&learner->current_hidden_layer, sizeof(int), 1, fp);
+	retval = fwrite(&learner->BPerror, sizeof(float), 1, fp);
+
+	retval = bp_save(fp, learner->net);
+	if (learner->autocoder != 0) {
+		val = 1;
+		retval = fwrite(&val, sizeof(int), 1, fp);
+		retval = bp_save(fp, learner->autocoder);
+	}
+	else {
+		val = 0;
+		retval = fwrite(&val, sizeof(int), 1, fp);
+	}
+	return retval;
+}
+
+/* load from file */
+int deeplearn_load(FILE * fp, deeplearn * learner,
+				   unsigned int * random_seed)
+{
+	int retval,val=0;
+
+	retval = fread(&learner->current_hidden_layer, sizeof(int), 1, fp);
+	retval = fread(&learner->BPerror, sizeof(float), 1, fp);
+
+	learner->net = (bp*)malloc(sizeof(bp));
+	retval = bp_load(fp, learner->net, random_seed);
+	retval = fread(&val, sizeof(int), 1, fp);
+	if (val == 1) {
+		learner->autocoder = (bp*)malloc(sizeof(bp));
+		retval = bp_load(fp, learner->autocoder, random_seed);
+	}
+	else {
+		learner->autocoder = 0;
+	}
+	return retval;
+}
+
+/* compares two deep learners and returns a greater
+   than zero value if they are the same */
+int deeplearn_compare(deeplearn * learner1,
+					  deeplearn * learner2)
+{
+	int retval;
+
+	if (learner1->current_hidden_layer !=
+		learner2->current_hidden_layer) {
+		return -1;
+	}
+	if (learner1->BPerror != learner2->BPerror) {
+		return -2;
+	}
+	retval = bp_compare(learner1->net,learner2->net);
+	if (retval < 1) return -3;
+	if ((learner1->autocoder==0) !=
+		(learner2->autocoder==0)) {
+		return -4;
+	}
+	return 1;
+}

@@ -341,6 +341,92 @@ static void test_backprop_deep()
 	printf("Ok\n");
 }
 
+static void test_backprop_neuron_save_load()
+{
+	bp_neuron n1, n2;
+	int no_of_inputs=10;
+	unsigned int random_seed = 123;
+	char filename[256];
+	FILE * fp;
+
+	printf("test_backprop_neuron_save_load...");
+
+	/* create neurons */
+	bp_neuron_init(&n1, no_of_inputs, &random_seed);
+	bp_neuron_init(&n2, no_of_inputs, &random_seed);
+
+	sprintf(filename,"%stemp_deep.dat",DEEPLEARN_TEMP_DIRECTORY);
+
+	/* save the first neuron */
+	fp = fopen(filename,"wb");
+	assert(fp!=0);
+	bp_neuron_save(fp, &n1);
+	fclose(fp);
+
+	/* load into the second neuron */
+	fp = fopen(filename,"rb");
+	assert(fp!=0);
+	bp_neuron_load(fp, &n2);
+	fclose(fp);
+
+	/* compare the two */
+	assert(bp_neuron_compare(&n1, &n2)==1);
+
+	/* free memory */
+	bp_neuron_free(&n1);
+	bp_neuron_free(&n2);
+
+	printf("Ok\n");
+}
+
+static void test_backprop_save_load()
+{
+	bp net1, net2;
+	int no_of_inputs=10;
+	int no_of_hiddens=4;
+	int no_of_outputs=3;
+	int hidden_layers=3;
+	int retval;
+	unsigned int random_seed = 123;
+	char filename[256];
+	FILE * fp;
+
+	printf("test_backprop_save_load...");
+
+	/* create network */
+	bp_init(&net1,
+			no_of_inputs, no_of_hiddens,
+			hidden_layers, no_of_outputs,
+			&random_seed);
+
+	sprintf(filename,"%stemp_deep.dat",DEEPLEARN_TEMP_DIRECTORY);
+
+	/* save the first network */
+	fp = fopen(filename,"wb");
+	assert(fp!=0);
+	bp_save(fp, &net1);
+	fclose(fp);
+
+	/* load into the second network */
+	fp = fopen(filename,"rb");
+	assert(fp!=0);
+	bp_load(fp, &net2, &random_seed);
+	fclose(fp);
+
+	/* compare the two */
+	retval = bp_compare(&net1, &net2);
+	if (retval<1) {
+		printf("\nretval = %d\n",retval);
+	}
+	assert(retval==1);
+
+	/* free memory */
+	bp_free(&net1);
+	bp_free(&net2);
+
+	printf("Ok\n");
+}
+
 int run_tests_backprop()
 {
 	printf("\nRunning backprop tests\n");
@@ -352,6 +438,8 @@ int run_tests_backprop()
 	test_backprop_update();
 	test_backprop_training();
 	test_backprop_deep();
+	test_backprop_neuron_save_load();
+	test_backprop_save_load();
 
 	printf("All backprop tests completed\n");
 	return 1;

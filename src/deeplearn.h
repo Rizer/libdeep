@@ -54,5 +54,10 @@ void deeplearn_free(deeplearn * learner);
 void deeplearn_set_input(deeplearn * learner, int index, float value);
 void deeplearn_set_output(deeplearn * learner, int index, float value);
 float deeplearn_get_output(deeplearn * learner, int index);
+int deeplearn_save(FILE * fp, deeplearn * learner);
+int deeplearn_load(FILE * fp, deeplearn * learner,
+				   unsigned int * random_seed);
+int deeplearn_compare(deeplearn * learner1,
+					  deeplearn * learner2);
 
 #endif

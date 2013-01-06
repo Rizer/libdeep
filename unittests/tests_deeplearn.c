@@ -50,11 +50,60 @@ static void test_deeplearn_init()
 	printf("Ok\n");
 }
 
+static void test_deeplearn_save_load()
+{
+	deeplearn learner1, learner2;
+	int no_of_inputs=10;
+	int no_of_hiddens=4;
+	int no_of_outputs=3;
+	int hidden_layers=3;
+	int retval;
+	unsigned int random_seed = 123;
+	char filename[256];
+	FILE * fp;
+
+	printf("test_deeplearn_save_load...");
+
+	/* create network */
+	deeplearn_init(&learner1,
+				   no_of_inputs, no_of_hiddens,
+				   hidden_layers, no_of_outputs,
+				   &random_seed);
+
+	sprintf(filename,"%stemp_deep.dat",DEEPLEARN_TEMP_DIRECTORY);
+
+	/* save the first learner */
+	fp = fopen(filename,"wb");
+	assert(fp!=0);
+	deeplearn_save(fp, &learner1);
+	fclose(fp);
+
+	/* load into the second learner */
+	fp = fopen(filename,"rb");
+	assert(fp!=0);
+	deeplearn_load(fp, &learner2, &random_seed);
+	fclose(fp);
+
+	/* compare the two */
+	retval = deeplearn_compare(&learner1, &learner2);
+	if (retval<1) {
+		printf("\nretval = %d\n",retval);
+	}
+	assert(retval==1);
+
+	/* free memory */
+	deeplearn_free(&learner1);
+	deeplearn_free(&learner2);
+
+	printf("Ok\n");
+}
+
 int run_tests_deeplearn()
 {
 	printf("\nRunning deeplearn tests\n");
 
 	test_deeplearn_init();
+	test_deeplearn_save_load();
 
 	printf("All deeplearn tests completed\n");
 	return 1;

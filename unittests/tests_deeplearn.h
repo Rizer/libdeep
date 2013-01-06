@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
+#include "globals.h"
 #include "backprop.h"
 #include "deeplearn.h"
 

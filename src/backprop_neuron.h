@@ -69,5 +69,8 @@ void bp_neuron_learn(bp_neuron * n,
 void bp_neuron_free(bp_neuron * n);
 void bp_neuron_copy(bp_neuron * source,
 					bp_neuron * dest);
+int bp_neuron_save(FILE * fp, bp_neuron * n);
+int bp_neuron_load(FILE * fp, bp_neuron * n);
+int bp_neuron_compare(bp_neuron * n1, bp_neuron * n2);
 
 #endif

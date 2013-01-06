@@ -341,3 +341,99 @@ void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
 	}
 	bp_update_autocoder(autocoder);
 }
+
+/* save a network to file */
+int bp_save(FILE * fp, bp * net)
+{
+	int retval,i,l;
+
+	retval = fwrite(&net->NoOfInputs, sizeof(int), 1, fp);
+	retval = fwrite(&net->NoOfHiddens, sizeof(int), 1, fp);
+	retval = fwrite(&net->NoOfOutputs, sizeof(int), 1, fp);
+	retval = fwrite(&net->HiddenLayers, sizeof(int), 1, fp);
+	retval = fwrite(&net->learningRate, sizeof(float), 1, fp);
+	retval = fwrite(&net->noise, sizeof(float), 1, fp);
+
+	for (l = 0; l < net->HiddenLayers; l++) {
+		for (i = 0; i < net->NoOfHiddens; i++) {
+			bp_neuron_save(fp,net->hiddens[l][i]);
+		}
+	}
+	for (i = 0; i < net->NoOfOutputs; i++) {
+		bp_neuron_save(fp,net->outputs[i]);
+	}
+
+	return retval;
+}
+
+/* load a network from file */
+int bp_load(FILE * fp, bp * net,
+			unsigned int * random_seed)
+{
+	int retval,i,l;
+	int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
+	int hidden_layers=0;
+	float learning_rate=0, noise=0;
+
+	retval = fread(&no_of_inputs, sizeof(int), 1, fp);
+	retval = fread(&no_of_hiddens, sizeof(int), 1, fp);
+	retval = fread(&no_of_outputs, sizeof(int), 1, fp);
+	retval = fread(&hidden_layers, sizeof(int), 1, fp);
+	retval = fread(&learning_rate, sizeof(float), 1, fp);
+	retval = fread(&noise, sizeof(float), 1, fp);
+
+	bp_init(net, no_of_inputs, no_of_hiddens,
+			hidden_layers, no_of_outputs,
+			random_seed);
+
+	for (l = 0; l < net->HiddenLayers; l++) {
+		for (i = 0; i < net->NoOfHiddens; i++) {
+			bp_neuron_load(fp,net->hiddens[l][i]);
+		}
+	}
+	for (i = 0; i < net->NoOfOutputs; i++) {
+		bp_neuron_load(fp,net->outputs[i]);
+	}
+
+	net->learningRate = learning_rate;
+	net->noise = noise;
+
+	return retval;
+}
+
+int bp_compare(bp * net1, bp * net2)
+{
+	int retval,i,l;
+
+	if (net1->NoOfInputs != net2->NoOfInputs) {
+		return -1;
+	}
+	if (net1->NoOfHiddens != net2->NoOfHiddens) {
+		return -2;
+	}
+	if (net1->NoOfOutputs != net2->NoOfOutputs) {
+		return -3;
+	}
+	if (net1->HiddenLayers != net2->HiddenLayers) {
+		return -4;
+	}
+	if (net1->learningRate != net2->learningRate) {
+		return -5;
+	}
+	if (net1->noise != net2->noise) {
+		return -6;
+	}
+	for (l = 0; l < net1->HiddenLayers; l++) {
+		for (i = 0; i < net1->NoOfHiddens; i++) {
+			retval =
+				bp_neuron_compare(net1->hiddens[l][i],
+								  net2->hiddens[l][i]);
+			if (retval == 0) return -7;
+		}
+	}
+	for (i = 0; i < net1->NoOfOutputs; i++) {
+		retval = bp_neuron_compare(net1->outputs[i], net2->outputs[i]);
+		if (retval == 0) return -8;
+	}
+	return 1;
+}

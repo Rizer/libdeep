@@ -97,6 +97,26 @@ void bp_neuron_init(bp_neuron * n,
 	}
 }
 
+/* compares two neurons and returns a non-zero value
+   if they are the same */
+int bp_neuron_compare(bp_neuron * n1, bp_neuron * n2)
+{
+	int i;
+
+	if ((n1->NoOfInputs != n2->NoOfInputs) ||
+		(n1->bias != n2->bias)) {
+		return 0;
+	}
+
+	for (i = 0; i < n1->NoOfInputs; i++) {
+		if ((n1->weights[i] != n2->weights[i]) ||
+			(n1->lastWeightChange[i] != n2->lastWeightChange[i])) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /* free memory */
 void bp_neuron_free(bp_neuron * n)
 {
@@ -190,4 +210,47 @@ void bp_neuron_learn(bp_neuron * n,
 			n->weights[i] += n->lastWeightChange[i];
 		}
 	}
+}
+
+/* saves neuron parameters.  Note that there is no need to
+   save the connections, since layers are always fully
+   interconnected */
+int bp_neuron_save(FILE * fp, bp_neuron * n)
+{
+	int retval;
+	
+	retval = fwrite(&n->NoOfInputs, sizeof(int), 1, fp);
+
+	retval = fwrite(n->weights, sizeof(float),
+					n->NoOfInputs, fp);
+	retval = fwrite(n->lastWeightChange, sizeof(float),
+					n->NoOfInputs, fp);
+
+	retval = fwrite(&n->bias, sizeof(float), 1, fp);
+	retval = fwrite(&n->lastBiasChange, sizeof(float), 1, fp);
+	retval = fwrite(&n->desiredValue, sizeof(float), 1, fp);
+
+	return retval;
+}
+
+/* load neuron parameters */
+int bp_neuron_load(FILE * fp, bp_neuron * n)
+{
+	int retval;
+
+	retval = fread(&n->NoOfInputs, sizeof(int), 1, fp);
+
+	retval = fread(n->weights, sizeof(float),
+				   n->NoOfInputs, fp);
+	retval = fread(n->lastWeightChange, sizeof(float),
+				   n->NoOfInputs, fp);
+
+	retval = fread(&n->bias, sizeof(float), 1, fp);
+	retval = fread(&n->lastBiasChange, sizeof(float), 1, fp);
+	retval = fread(&n->desiredValue, sizeof(float), 1, fp);
+
+	n->value = 0;
+	n->BPerror = 0;
+
+	return retval;
 }
