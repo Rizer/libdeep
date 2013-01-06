@@ -30,13 +30,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "tests_random.h"
 #include "tests_backprop.h"
 #include "tests_deeplearn.h"
 
 int main(int argc, char* argv[])
 {
+	run_tests_random();
 	run_tests_backprop();
-	/*run_tests_deeplearn();*/
+	run_tests_deeplearn();
 
 	return 1;
 }

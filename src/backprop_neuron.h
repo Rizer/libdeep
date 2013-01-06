@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <time.h>
 #include <omp.h>
+#include "deeplearn_random.h"
 
 struct bp_n {
 	int NoOfInputs;

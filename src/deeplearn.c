@@ -88,8 +88,10 @@ void deeplearn_update(deeplearn * learner,
 void deeplearn_free(deeplearn * learner)
 {
 	bp_free(learner->net);
+	free(learner->net);
 	if (learner->autocoder != 0) {
 		bp_free(learner->autocoder);
+		free(learner->autocoder);
 	}
 }
 

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "deeplearn_random.h"
 #include "backprop_neuron.h"
 
 struct backprop {

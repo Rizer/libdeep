@@ -1,16 +1,6 @@
 
 #include "backprop_neuron.h"
 
-/* Lehmer random number generator */
-static int rand_num(unsigned int * seed)
-{
-	unsigned int v =
-		((unsigned long long)(*seed) * 279470273UL) % 4294967291UL;
-	if (v==0) v = (int)time(NULL); /* avoid the singularity */
-	*seed = v;
-	return abs((int)v);
-}
-
 /* randomly initialises the weights within the given range */
 static void bp_neuron_init_weights(bp_neuron * n,
 								   float minVal, float maxVal,
