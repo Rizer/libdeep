@@ -78,7 +78,7 @@ void deeplearn_update(deeplearn * learner,
 		learner->BPerror = learner->autocoder->BPerror;
 
 		/* if below the errro threshold */
-		if (learner->net->BPerror < max_backprop_error) {
+		if (learner->BPerror < max_backprop_error) {
 			/* copy the hidden units */
 			bp_update_from_autocoder(learner->net,
 									 learner->autocoder,
@@ -102,6 +102,7 @@ void deeplearn_update(deeplearn * learner,
 									learner->current_hidden_layer,
 									learner->autocoder);
 			}
+			learner->BPerror = 9999;
 		}
 	}
 	else {

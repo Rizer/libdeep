@@ -199,7 +199,7 @@ void bp_backprop(bp * net)
 		bp_neuron_backprop(n);
 		net->BPerrorTotal += n->BPerror;
 	}
-	net->BPerror = net->BPerrorTotal / net->NoOfOutputs;
+	net->BPerror = fabs(net->BPerrorTotal / net->NoOfOutputs);
   
 	for (l = net->HiddenLayers-1; l >= 0; l--) {	
 		for (i = 0; i < net->NoOfHiddens; i++) {
@@ -209,8 +209,9 @@ void bp_backprop(bp * net)
 		}
 	}
   
-	net->BPerrorTotal /= (net->NoOfOutputs +
-						  net->NoOfHiddens); 
+	net->BPerrorTotal =
+		fabs(net->BPerrorTotal /
+			 (net->NoOfOutputs + net->NoOfHiddens)); 
 }
 
 void bp_learn(bp * net)

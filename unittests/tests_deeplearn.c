@@ -39,12 +39,96 @@ static void test_deeplearn_init()
 
 	printf("test_deeplearn_init...");
 
+	/* create the learner */
 	deeplearn_init(&learner,
 				   no_of_inputs, no_of_hiddens,
 				   hidden_layers,
 				   no_of_outputs, &random_seed);
+
 	assert((&learner)->net!=0);
 	assert((&learner)->autocoder!=0);
+
+	/* free memory */
+	deeplearn_free(&learner);
+
+	printf("Ok\n");
+}
+
+static void test_deeplearn_update()
+{
+	deeplearn learner;
+	int no_of_inputs=10;
+	int no_of_hiddens=4;
+	int hidden_layers=2;
+	int no_of_outputs=2;
+	int itt,i;
+	unsigned int random_seed = 123;
+	float max_backprop_error = 0.03f;
+	int itterations[3];
+
+	printf("test_deeplearn_update...");
+
+	itterations[0] = 0;
+	itterations[1] = 0;
+	itterations[2] = 0;
+
+	/* create the learner */
+	deeplearn_init(&learner,
+				   no_of_inputs, no_of_hiddens,
+				   hidden_layers,
+				   no_of_outputs, &random_seed);
+
+	assert((&learner)->net!=0);
+	assert((&learner)->autocoder!=0);
+
+	/* perform pre-training with an autocoder */
+	for (itt = 0; itt < 10000; itt++) {
+		for (i = 0; i < no_of_inputs; i++) {
+			deeplearn_set_input(&learner,i,i/(float)no_of_inputs);
+		}
+		deeplearn_update(&learner, max_backprop_error);
+
+		itterations[learner.current_hidden_layer]++;
+
+		if (learner.current_hidden_layer==hidden_layers) {
+			break;
+		}
+	}
+
+	/* we expect that there will be some non-zero error */
+	assert(learner.BPerror!=0);
+
+	/* test that it took some itterations to train */
+	assert(itterations[0] > 4);
+	assert(itterations[1] > 4);
+
+	/* perform the final training between the last
+	   hidden layer and the outputs */
+	for (itt = 0; itt < 10000; itt++) {
+		for (i = 0; i < no_of_inputs; i++) {
+			deeplearn_set_input(&learner,i,i/(float)no_of_inputs);
+		}
+		for (i = 0; i < no_of_outputs; i++) {
+			deeplearn_set_output(&learner,i,
+								 1.0f - (i/(float)no_of_inputs));
+		}
+		deeplearn_update(&learner, max_backprop_error);
+
+		itterations[learner.current_hidden_layer]++;
+
+		if (learner.BPerror < max_backprop_error) {
+			break;
+		}
+	}
+
+	/* test that it took some itterations to
+	   do the final training */
+	assert(itterations[2] > 4);
+
+	/* we expect that there will be some non-zero error */
+	assert(learner.BPerror!=0);
+
+	/* free memory */
 	deeplearn_free(&learner);
 
 	printf("Ok\n");
@@ -104,6 +188,7 @@ int run_tests_deeplearn()
 
 	test_deeplearn_init();
 	test_deeplearn_save_load();
+	test_deeplearn_update();
 
 	printf("All deeplearn tests completed\n");
 	return 1;
