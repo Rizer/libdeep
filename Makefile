@@ -9,22 +9,26 @@ all:
 	gcc -c -std=c99 -pedantic -fPIC -o $(APP)_neuron.o src/backprop_neuron.c -Isrc -lm -fopenmp
 	gcc -c -std=c99 -pedantic -fPIC -o $(APP).o src/backprop.c -Isrc -lm -fopenmp
 	gcc -c -std=c99 -pedantic -fPIC -o $(APP)learn.o src/deeplearn.c -Isrc -lm -fopenmp
-	gcc -c -std=c99 -pedantic -fPIC -o $(APP)random.o src/deeplearn_random.c -Isrc -lm -fopenmp
-	gcc -shared -Wl,-soname,$(SONAME) -o $(LIBNAME) $(APP).o $(APP)_neuron.o $(APP)learn.o $(APP)random.o
+	gcc -c -std=c99 -pedantic -fPIC -o $(APP)random.o src/deeplearn_random.c -Isrc -lm
+	gcc -c -std=c99 -pedantic -fPIC -o $(APP)png.o src/pnglite.c -Isrc -lm -lz
+	gcc -c -std=c99 -pedantic -fPIC -o $(APP)images.o src/deeplearn_images.c -Isrc -lm -lz
+	gcc -shared -Wl,-soname,$(SONAME) -o $(LIBNAME) $(APP).o $(APP)_neuron.o $(APP)learn.o $(APP)random.o $(APP)png.o $(APP)images.o
 #	objdump -p ${LIBNAME} | sed -n -e's/^[[:space:]]*SONAME[[:space:]]*//p' | sed -e's/\([0-9]\)\.so\./\1-/; s/\.so\.//'
 
 debug:
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP).o src/backprop.c -Isrc -lm -fopenmp
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)_neuron.o src/backprop_neuron.c -Isrc -lm -fopenmp
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)learn.o src/deeplearn.c -Isrc -lm -fopenmp
-	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)random.o src/deeplearn_random.c -Isrc -lm -fopenmp
-	gcc -shared -Wl,-soname,$(SONAME) -o $(LIBNAME) $(APP).o $(APP)_neuron.o $(APP)learn.o $(APP)random.o
+	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)random.o src/deeplearn_random.c -Isrc -lm
+	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)png.o src/png.c -Isrc -lm -lz
+	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)images.o src/deeplearn_images.c -Isrc -lm -lz
+	gcc -shared -Wl,-soname,$(SONAME) -o $(LIBNAME) $(APP).o $(APP)_neuron.o $(APP)learn.o $(APP)random.o $(APP)png.o $(APP)images.o
 
 tests:
-	gcc -Wall -std=c99 -pedantic -g -o $(APP)_tests unittests/*.c src/*.c -Isrc -Iunittests -lm -fopenmp
+	gcc -Wall -std=c99 -pedantic -g -o $(APP)_tests unittests/*.c src/*.c -Isrc -Iunittests -lm -lz -fopenmp
 
 ltest:
-	gcc -Wall -std=c99 -pedantic -g -o $(APP) libtest/*.c -ldeep -lm -fopenmp
+	gcc -Wall -std=c99 -pedantic -g -o $(APP) libtest/*.c -ldeep -lm -lz -fopenmp
 
 source:
 	tar -cvzf ../$(APP)_$(VERSION).orig.tar.gz ../$(APP)-$(VERSION) --exclude=.bzr
