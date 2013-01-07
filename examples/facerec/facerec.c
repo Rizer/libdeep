@@ -32,23 +32,33 @@
 #include "libdeep/deeplearn.h"
 #include "libdeep/deeplearn_images.h"
 
+/* the dimensions of each face image */
 int image_width = 80;
 int image_height = 80;
 
+/* the number of face images */
 int no_of_images;
+
+/* array storing the face images */
 unsigned char **images;
 
+deeplearn learner;
+
+/* train the deep learner */
 static void facerec_training()
 {
-	deeplearn learner;
-	int no_of_inputs=10;
-	int no_of_hiddens=4;
-	int hidden_layers=2;
-	int no_of_outputs=2;
-	int itt,i;
+	int patch_size = image_width/10;
+	int no_of_inputs = patch_size*patch_size;
+	int no_of_hiddens = patch_size;
+	int hidden_layers=4;
+	int no_of_outputs=5;
+	int itt,i,tx,ty;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.03f;
+	float max_backprop_error = 0.01f;
 	char filename[256];
+	char title[256];
+
+	sprintf(title, "%s", "Face Image Training");
 
 	/* create the learner */
 	deeplearn_init(&learner,
@@ -57,74 +67,101 @@ static void facerec_training()
 				   no_of_outputs, &random_seed);
 
 	/* perform pre-training with an autocoder */
-	for (itt = 0; itt < 10000; itt++) {
-		for (i = 0; i < no_of_inputs; i++) {
-			deeplearn_set_input(&learner,i,i/(float)no_of_inputs);
-		}
-		deeplearn_update(&learner, max_backprop_error);
+	itt = 0;
+	while (learner.current_hidden_layer < hidden_layers) {
+		/* pick a random patch location */
+		tx = rand_num(&random_seed)%(image_width-patch_size);
+		ty = rand_num(&random_seed)%(image_height-patch_size);
 
-		if (learner.current_hidden_layer==hidden_layers) {
-			break;
+		/* load the patch into the network inputs */
+		deeplearn_inputs_from_image_patch(&learner,
+										  images[rand_num(&random_seed)%no_of_images],
+										  image_width, image_height,
+										  tx, ty);
+
+		deeplearn_update(&learner, max_backprop_error);
+		itt++;
+		printf("%d: %.5f\n",
+			   learner.current_hidden_layer, learner.BPerror);
+		if ((itt % 1000 == 0) && (itt>0)) {
+			/* save a graph */
+			sprintf(filename,"%s","training_error.png");
+			deeplearn_plot_history(&learner,
+								   filename, title,
+								   1024, 480);			
 		}
 	}
 
 	/* perform the final training between the last
 	   hidden layer and the outputs */
-	for (itt = 0; itt < 10000; itt++) {
-		for (i = 0; i < no_of_inputs; i++) {
-			deeplearn_set_input(&learner,i,i/(float)no_of_inputs);
-		}
+	while (learner.BPerror > max_backprop_error) {
+		/* pick a random patch location */
+		tx = rand_num(&random_seed)%(image_width-patch_size);
+		ty = rand_num(&random_seed)%(image_height-patch_size);
+
+		/* load the patch into the network inputs */
+		deeplearn_inputs_from_image_patch(&learner,
+										  images[rand_num(&random_seed)%no_of_images],
+										  image_width, image_height,
+										  tx, ty);
+
 		for (i = 0; i < no_of_outputs; i++) {
 			deeplearn_set_output(&learner,i,
 								 1.0f - (i/(float)no_of_inputs));
 		}
 		deeplearn_update(&learner, max_backprop_error);
 
-		if (learner.BPerror < max_backprop_error) {
-			break;
+		itt++;
+		printf("Final: %.5f\n",learner.BPerror);
+		if ((itt % 1000 == 0) && (itt>0)) {
+			/* save a graph */
+			sprintf(filename,"%s","training_error.png");
+			deeplearn_plot_history(&learner,
+								   filename, title,
+								   1024, 480);			
 		}
 	}
 
 	/* save a graph */
 	sprintf(filename,"%s","training_error.png");
 	deeplearn_plot_history(&learner,
-						   filename, "Training Error",
+						   filename, title,
 						   1024, 480);
-
-	/* free memory */
-	deeplearn_free(&learner);
 }
 
-static void free_images(unsigned char ** images,
-						int no_of_images)
+/* deallocate images */
+static void free_mem(unsigned char ** images,
+					 int no_of_images)
 {
 	int i;
 
 	if (images==NULL) return;
 
 	for (i = 0; i < no_of_images; i++) {
-		printf("i = %d\n",i);
 		if (images[i] != NULL) {
 			free(images[i]);
 			images[i] = 0;
 		}
 	}
 	free(images);
+
+	deeplearn_free(&learner);
 }
 
 int main(int argc, char* argv[])
 {
 	images = NULL;
 
+	/* load training images into an array */
 	no_of_images =
 		deeplearn_load_training_images("images", &images,
 									   image_width, image_height);
 	
 	printf("No of images: %d\n", no_of_images);
 
-	/*facerec_training();*/
+	facerec_training();
 
-	free_images(images, no_of_images);
+	free_mem(images, no_of_images);
 	return 1;
 }
 
