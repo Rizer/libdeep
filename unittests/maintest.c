@@ -33,9 +33,11 @@
 #include "tests_random.h"
 #include "tests_backprop.h"
 #include "tests_deeplearn.h"
+#include "tests_images.h"
 
 int main(int argc, char* argv[])
 {
+	run_tests_images();
 	run_tests_random();
 	run_tests_backprop();
 	run_tests_deeplearn();

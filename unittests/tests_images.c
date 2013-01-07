@@ -1,5 +1,4 @@
 /*
- libdeep - a library for deep learning
  Copyright (C) 2013  Bob Mottram <bob@sluggish.dyndns.org>
 
  Redistribution and use in source and binary forms, with or without
@@ -27,24 +26,58 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef DEEPLEARN_IMAGES_H
-#define DEEPLEARN_IMAGES_H
+#include "tests_images.h"
 
-#define _SVID_SOURCE
+static void save_image(char * filename)
+{
+	int width = 80;
+	int height = 80;
+	unsigned char * buffer;
+	int i;
+	FILE * fp;
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <zlib.h>
-#include <dirent.h>
-#include "pnglite.h"
+	/* allocate memory */
+	buffer = (unsigned char*)malloc(width*height*3*
+									sizeof(unsigned char));
+	assert(buffer != 0);
 
-unsigned char * deeplearn_read_png(char * filename, png_t * ptr);
-int deeplearn_write_png(char* filename,
-						int width, int height,
-						unsigned char *buffer);
-int deeplearn_load_training_images(char * images_directory,
-								   unsigned char *** images,
-								   int width, int height);
+	/* create a random image */
+	for (i = 0; i < width*height*3; i+=3) {
+		buffer[i] = i%256;
+		buffer[i+1] = 255 - buffer[i];
+		buffer[i+2] = buffer[i];
+	}
 
-#endif
+	/* write to file */
+	deeplearn_write_png(filename, width, height, buffer);
+
+	/* free memory */
+	free(buffer);
+
+	/* check that the file has saved */
+	fp = fopen(filename,"rb");
+	assert(fp);
+	fclose(fp);
+}
+
+static void test_save_image()
+{
+	char filename[256];
+
+	printf("test_save_image...");
+
+	sprintf(filename,"%stemp_img.png",DEEPLEARN_TEMP_DIRECTORY);
+	save_image(filename);
+
+	printf("Ok\n");
+}
+
+int run_tests_images()
+{
+	printf("\nRunning images tests\n");
+
+	test_save_image();
+
+	printf("All images tests completed\n");
+	return 1;
+}

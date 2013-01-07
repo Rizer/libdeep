@@ -27,24 +27,18 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef DEEPLEARN_IMAGES_H
-#define DEEPLEARN_IMAGES_H
-
-#define _SVID_SOURCE
+#ifndef DEEPLEARN_TESTS_IMAGES_H
+#define DEEPLEARN_TESTS_IMAGES_H
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <zlib.h>
-#include <dirent.h>
-#include "pnglite.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <ctype.h>
+#include <math.h>
+#include "globals.h"
+#include "deeplearn_images.h"
 
-unsigned char * deeplearn_read_png(char * filename, png_t * ptr);
-int deeplearn_write_png(char* filename,
-						int width, int height,
-						unsigned char *buffer);
-int deeplearn_load_training_images(char * images_directory,
-								   unsigned char *** images,
-								   int width, int height);
+int run_tests_images();
 
 #endif

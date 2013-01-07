@@ -20,7 +20,7 @@ debug:
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)_neuron.o src/backprop_neuron.c -Isrc -lm -fopenmp
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)learn.o src/deeplearn.c -Isrc -lm -fopenmp
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)random.o src/deeplearn_random.c -Isrc -lm
-	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)png.o src/png.c -Isrc -lm -lz
+	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)png.o src/pnglite.c -Isrc -lm -lz
 	gcc -c -std=c99 -pedantic -fPIC -g -o $(APP)images.o src/deeplearn_images.c -Isrc -lm -lz
 	gcc -shared -Wl,-soname,$(SONAME) -o $(LIBNAME) $(APP).o $(APP)_neuron.o $(APP)learn.o $(APP)random.o $(APP)png.o $(APP)images.o
 

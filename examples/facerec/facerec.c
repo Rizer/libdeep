@@ -30,7 +30,13 @@
 #include <stdio.h>
 #include "libdeep/globals.h"
 #include "libdeep/deeplearn.h"
+#include "libdeep/deeplearn_images.h"
 
+int image_width = 80;
+int image_height = 80;
+
+int no_of_images;
+unsigned char **images;
 
 static void facerec_training()
 {
@@ -89,9 +95,36 @@ static void facerec_training()
 	deeplearn_free(&learner);
 }
 
+static void free_images(unsigned char ** images,
+						int no_of_images)
+{
+	int i;
+
+	if (images==NULL) return;
+
+	for (i = 0; i < no_of_images; i++) {
+		printf("i = %d\n",i);
+		if (images[i] != NULL) {
+			free(images[i]);
+			images[i] = 0;
+		}
+	}
+	free(images);
+}
+
 int main(int argc, char* argv[])
-{	
-	facerec_training();
+{
+	images = NULL;
+
+	no_of_images =
+		deeplearn_load_training_images("images", &images,
+									   image_width, image_height);
+	
+	printf("No of images: %d\n", no_of_images);
+
+	/*facerec_training();*/
+
+	free_images(images, no_of_images);
 	return 1;
 }
 
