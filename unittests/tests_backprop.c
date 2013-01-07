@@ -42,6 +42,31 @@ static void test_backprop_neuron_init()
 	printf("Ok\n");
 }
 
+static void test_backprop_neuron_copy()
+{
+	bp_neuron n1, n2;
+	int retval, no_of_inputs=10;
+	unsigned int random_seed = 123;
+
+	printf("test_backprop_neuron_copy...");
+
+	bp_neuron_init(&n1, no_of_inputs, &random_seed);
+	bp_neuron_init(&n2, no_of_inputs, &random_seed);
+
+	bp_neuron_copy(&n1, &n2);
+
+	retval = bp_neuron_compare(&n1, &n2);
+	if (retval != 1) {
+		printf("\nretval %d\n", retval);
+	}
+	assert(retval == 1);
+
+	bp_neuron_free(&n1);
+	bp_neuron_free(&n2);
+
+	printf("Ok\n");
+}
+
 static void test_backprop_init()
 {
 	bp net;
@@ -432,6 +457,7 @@ int run_tests_backprop()
 	printf("\nRunning backprop tests\n");
 
 	test_backprop_neuron_init();	
+	test_backprop_neuron_copy();
 	test_backprop_init();
 	test_backprop_feed_forward();
 	test_backprop();

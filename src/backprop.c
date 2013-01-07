@@ -173,7 +173,7 @@ void bp_feed_forward_layers(bp * net, int layers)
 	}
 }
 
-
+/* back-propogate errors */
 void bp_backprop(bp * net)
 {
 	int i,l;
@@ -199,8 +199,11 @@ void bp_backprop(bp * net)
 		bp_neuron_backprop(n);
 		net->BPerrorTotal += n->BPerror;
 	}
+
+	/* error on the output units */
 	net->BPerror = fabs(net->BPerrorTotal / net->NoOfOutputs);
-  
+
+	/* back-propogate through the hidden layers */
 	for (l = net->HiddenLayers-1; l >= 0; l--) {	
 		for (i = 0; i < net->NoOfHiddens; i++) {
 			n = net->hiddens[l][i];
@@ -208,17 +211,20 @@ void bp_backprop(bp * net)
 			net->BPerrorTotal += n->BPerror;
 		}
 	}
-  
+
+	/* overall average error */
 	net->BPerrorTotal =
 		fabs(net->BPerrorTotal /
 			 (net->NoOfOutputs + net->NoOfHiddens)); 
 }
 
+/* adjust connection weights and bias values */
 void bp_learn(bp * net)
 {  
 	int i,l;
 	bp_neuron * n;
 
+	/* hidden layers */
 	for (l = 0; l < net->HiddenLayers; l++) {	
 		for (i = 0; i < net->NoOfHiddens; i++) {
 			n = net->hiddens[l][i];
@@ -226,6 +232,7 @@ void bp_learn(bp * net)
 		}
 	}
 
+	/* output layer */
 	for (i = 0; i < net->NoOfOutputs; i++) {
 		n = net->outputs[i];
 		bp_neuron_learn(n,net->learningRate);
@@ -283,11 +290,15 @@ static void bp_update_autocoder(bp * net)
 {
 	int i;
 
+	/* number of input and output units should be the same */
 	assert(net->NoOfInputs == net->NoOfOutputs);
+
+	/* set the target outputs to be the same as the inputs */
 	for (i = 0; i < net->NoOfInputs; i++) {
 		bp_set_output(net,i,net->inputs[i]->value);
 	}
 
+	/* run the autocoder */
 	bp_update(net);
 }  
 
@@ -327,19 +338,29 @@ void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
 	}
 
 	if (hidden_layer > 0) {
+		/* check that the number of inputs is valid */
 		assert(net->NoOfHiddens == autocoder->NoOfInputs);
+
+		/* copy the hidden unit values to the inputs
+		   of the autocoder */
 		for (i = 0; i < net->NoOfHiddens; i++) {
 			bp_set_input(autocoder,i,
 						 bp_get_hidden(net, hidden_layer, i));
 		}
 	}
 	else {
-		assert(autocoder->NoOfInputs==net->NoOfInputs);
+		/* check that the number of inputs is valid */
+		assert(autocoder->NoOfInputs == net->NoOfInputs);
+
+		/* copy the input unit values to the inputs
+		   of the autocoder */
 		for (i = 0; i < net->NoOfInputs; i++) {
 			bp_set_input(autocoder, i,
 						 bp_get_input(net, i));
 		}
 	}
+
+	/* run the autocoder */
 	bp_update_autocoder(autocoder);
 }
 
@@ -402,6 +423,8 @@ int bp_load(FILE * fp, bp * net,
 	return retval;
 }
 
+/* compares two networks and returns a greater than zero
+   value if they are the same */
 int bp_compare(bp * net1, bp * net2)
 {
 	int retval,i,l;

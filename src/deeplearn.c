@@ -137,6 +137,8 @@ void deeplearn_update(deeplearn * learner,
 									learner->current_hidden_layer,
 									learner->autocoder);
 			}
+
+			/* reset the error value */
 			learner->BPerror = DEEPLEARN_UNKNOWN_ERROR;
 		}
 	}
@@ -155,8 +157,11 @@ void deeplearn_update(deeplearn * learner,
 /* free the deep learner's allocated memory */
 void deeplearn_free(deeplearn * learner)
 {
+	/* free the learner */
 	bp_free(learner->net);
 	free(learner->net);
+
+	/* free the autocoder */
 	if (learner->autocoder != 0) {
 		bp_free(learner->autocoder);
 		free(learner->autocoder);
@@ -200,6 +205,7 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
 		retval = fwrite(&val, sizeof(int), 1, fp);
 	}
 
+	/* save the history */
 	retval = fwrite(&learner->history_index, sizeof(int), 1, fp);
 	retval = fwrite(&learner->history_ctr, sizeof(int), 1, fp);
 	retval = fwrite(&learner->history_step, sizeof(int), 1, fp);
@@ -229,6 +235,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 		learner->autocoder = 0;
 	}
 
+	/* load the history */
 	retval = fread(&learner->history_index, sizeof(int), 1, fp);
 	retval = fread(&learner->history_ctr, sizeof(int), 1, fp);
 	retval = fread(&learner->history_step, sizeof(int), 1, fp);
