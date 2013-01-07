@@ -66,5 +66,12 @@ int deeplearn_compare(deeplearn * learner1,
 int deeplearn_plot_history(deeplearn * learner,
 						   char * filename, char * title,
 						   int image_width, int image_height);
+void deeplearn_inputs_from_image_patch(deeplearn * learner,
+									   unsigned char * img,
+									   int image_width, int image_height,
+									   int tx, int ty);
+void deeplearn_inputs_from_image(deeplearn * learner,
+								 unsigned char * img,
+								 int image_width, int image_height);
 
 #endif

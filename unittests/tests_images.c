@@ -143,6 +143,7 @@ static void test_load_training_images()
 	sprintf(str,"%sdeeplearn_test_images",
 			DEEPLEARN_TEMP_DIRECTORY);
 
+	/* load the images */
 	no_of_images2 =
 		deeplearn_load_training_images(str,
 									   &images, width, height);

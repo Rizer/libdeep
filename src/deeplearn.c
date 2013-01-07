@@ -348,3 +348,20 @@ int deeplearn_plot_history(deeplearn * learner,
 	retval = system(command_str);
 	return retval;
 }
+
+void deeplearn_inputs_from_image_patch(deeplearn * learner,
+									   unsigned char * img,
+									   int image_width, int image_height,
+									   int tx, int ty)
+{
+	bp_inputs_from_image_patch(learner->net,
+							   img, image_width, image_height,
+							   tx, ty);
+}
+
+void deeplearn_inputs_from_image(deeplearn * learner,
+								 unsigned char * img,
+								 int image_width, int image_height)
+{
+	bp_inputs_from_image(learner->net, img, image_width, image_height);
+}

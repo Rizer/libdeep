@@ -71,5 +71,12 @@ int bp_save(FILE * fp, bp * net);
 int bp_load(FILE * fp, bp * net,
 			unsigned int * random_seed);
 int bp_compare(bp * net1, bp * net2);
+void bp_inputs_from_image_patch(bp * net,
+								unsigned char * img,
+								int image_width, int image_height,
+								int tx, int ty);
+void bp_inputs_from_image(bp * net,
+						  unsigned char * img,
+						  int image_width, int image_height);
 
 #endif

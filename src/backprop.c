@@ -247,6 +247,49 @@ void bp_set_input(bp * net, int index, float value)
 	n->value = value; 
 }
 
+/* Set the unputs of the network from a patch within an image.
+   It is assumed that the image is mono (1 byte per pixel) */
+void bp_inputs_from_image_patch(bp * net,
+								unsigned char * img,
+								int image_width, int image_height,
+								int tx, int ty)
+{
+	int px,py,i=0,n;
+	int patch_size = (int)sqrt(net->NoOfInputs);
+
+	assert(patch_size*patch_size <= net->NoOfInputs);
+
+	/* set the inputs */
+	for (py = ty; py < ty+patch_size; py++) {
+		if (py >= image_height) break;
+		for (px = tx; px < tx+patch_size; px++, i++) {
+			if (px >= image_width) break;
+			n = (py*image_width) + px;
+			bp_set_input(net, i, 0.25f + (img[n]*0.5f/255.0f));
+		}
+	}
+}
+
+/* Set the inputs of the network from an image.
+   It is assumed that the image is mono (1 byte per pixel) */
+void bp_inputs_from_image(bp * net,
+						  unsigned char * img,
+						  int image_width, int image_height)
+{
+	int px,py,i=0;
+
+	/* check that the number of inputs is the same as the
+	   number of pixels */
+	assert(net->NoOfInputs == image_width*image_height);
+
+	/* set the inputs */
+	for (py = 0; py < image_height; py++) {
+		for (px = 0; px < image_width; px++, i++) {
+			bp_set_input(net, i, 0.25f + (img[i]*0.5f/255.0f));
+		}
+	}
+}
+
 static float bp_get_input(bp * net, int index)
 {
 	bp_neuron * n;
