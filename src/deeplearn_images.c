@@ -281,14 +281,13 @@ int deeplearn_load_training_images(char * images_directory,
 						deeplearn_downsample(img, ptr.width, ptr.height,
 											 downsampled, width, height);
 
-						*images[no_of_images] = downsampled;
-						printf("Assigned %d\n",no_of_images);
+						(*images)[no_of_images] = downsampled;
 
 						/* free the original image */
 						free(img);
 					}
 					else {
-						*images[no_of_images] = NULL;
+						(*images)[no_of_images] = NULL;
 					}
 					png_close_file(&ptr);
 					no_of_images++;

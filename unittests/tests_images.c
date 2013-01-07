@@ -62,19 +62,24 @@ static void save_image(char * filename)
 
 static void test_save_image()
 {
-	char filename[256];
+	char filename[256], commandstr[256];
 
 	printf("test_save_image...");
 
 	sprintf(filename,"%stemp_img.png",DEEPLEARN_TEMP_DIRECTORY);
 	save_image(filename);
 
+	/* remove the image */
+	sprintf(commandstr,"rm -f %stemp_img.png",
+			DEEPLEARN_TEMP_DIRECTORY);
+	system(commandstr);
+
 	printf("Ok\n");
 }
 
 static void test_load_image()
 {
-	char filename[256];
+	char filename[256], commandstr[256];
 	unsigned char * buffer;
 	png_t ptr;
 	int i;
@@ -103,6 +108,58 @@ static void test_load_image()
 	/* free memory */
 	free(buffer);
 
+	/* remove the image */
+	sprintf(commandstr,"rm -f %stemp_deeplearn_img.png",
+			DEEPLEARN_TEMP_DIRECTORY);
+	system(commandstr);
+
+	printf("Ok\n");
+}
+
+static void test_load_training_images()
+{
+	char filename[256];
+	unsigned char ** images=NULL;
+	int im;
+	int no_of_images = 3;
+	int no_of_images2;
+	int width=40,height=40;
+	char commandstr[256],str[256];
+
+	printf("test_load_training_images...");
+
+	/* create a directory for the images */
+	sprintf(commandstr,"mkdir %sdeeplearn_test_images",
+			DEEPLEARN_TEMP_DIRECTORY);
+	system(commandstr);
+
+	/* save a tests images */
+	for (im = 0; im < no_of_images; im++) {
+		sprintf(filename,"%sdeeplearn_test_images/img%d.png",
+				DEEPLEARN_TEMP_DIRECTORY, im);
+		save_image(filename);
+	}
+
+	sprintf(str,"%sdeeplearn_test_images",
+			DEEPLEARN_TEMP_DIRECTORY);
+
+	no_of_images2 =
+		deeplearn_load_training_images(str,
+									   &images, width, height);
+	assert(no_of_images == no_of_images2);
+	assert(images!=NULL);
+	
+	/* free memory */
+	for (im = 0; im < no_of_images; im++) {
+		free(images[im]);
+	}
+	free(images);
+
+	/* remove the images */
+	sprintf(commandstr,"rm -rf %sdeeplearn_test_images",
+			DEEPLEARN_TEMP_DIRECTORY);
+	system(commandstr);
+
 	printf("Ok\n");
 }
 
@@ -112,6 +169,7 @@ int run_tests_images()
 
 	test_save_image();
 	test_load_image();
+	test_load_training_images();
 
 	printf("All images tests completed\n");
 	return 1;
