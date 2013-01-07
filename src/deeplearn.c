@@ -278,3 +278,66 @@ int deeplearn_compare(deeplearn * learner1,
 	}
 	return 1;
 }
+
+/* uses gnuplot to plot the training error for the given learner */
+int deeplearn_plot_history(deeplearn * learner,
+						   char * filename, char * title,
+						   int image_width, int image_height)
+{
+	int index,retval;
+	FILE * fp;
+	char data_filename[256];
+	char plot_filename[256];
+	char command_str[256];
+	float value;
+	float max_value = 0.01f;
+
+	sprintf(data_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,"libgpr_data.dat");
+	sprintf(plot_filename,"%s%s",DEEPLEARN_TEMP_DIRECTORY,"libgpr_data.plot");
+
+	/* save the data */
+	fp = fopen(data_filename,"w");
+	if (!fp) return -1;
+	for (index = 0; index < learner->history_index; index++) {
+		value = learner->history[index];
+		fprintf(fp,"%d    %.10f\n",
+				index*learner->history_step,value);
+		/* record the maximum error value */
+		if (value > max_value) {
+			max_value = value;
+		}
+	}
+	fclose(fp);
+
+	/* create a plot file */
+	fp = fopen(plot_filename,"w");
+	if (!fp) return -1;
+	fprintf(fp,"%s","reset\n");
+	fprintf(fp,"set title \"%s\"\n",title);
+	fprintf(fp,"set xrange [0:%d]\n",
+			learner->history_index*learner->history_step);
+	fprintf(fp,"set yrange [0:%f]\n",max_value*102/100);
+	fprintf(fp,"%s","set lmargin 9\n");
+	fprintf(fp,"%s","set rmargin 2\n");
+	fprintf(fp,"%s","set xlabel \"Time Step\"\n");
+	fprintf(fp,"%s","set ylabel \"Training Error\"\n");
+
+	fprintf(fp,"%s","set grid\n");
+	fprintf(fp,"%s","set key right top\n");
+
+	fprintf(fp,"set terminal png size %d,%d\n",
+			image_width, image_height);
+	fprintf(fp,"set output \"%s\"\n", filename);
+	fprintf(fp,"plot \"%s\" using 1:2 notitle with lines\n",
+			data_filename);
+	fclose(fp);
+
+	/* run gnuplot using the created files */
+	sprintf(command_str,"gnuplot %s", plot_filename);
+	retval = system(command_str); /* I assume this is synchronous */
+
+	/* remove temporary files */
+	sprintf(command_str,"rm %s %s", data_filename,plot_filename);
+	retval = system(command_str);
+	return retval;
+}

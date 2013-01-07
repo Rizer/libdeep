@@ -63,5 +63,8 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 				   unsigned int * random_seed);
 int deeplearn_compare(deeplearn * learner1,
 					  deeplearn * learner2);
+int deeplearn_plot_history(deeplearn * learner,
+						   char * filename, char * title,
+						   int image_width, int image_height);
 
 #endif

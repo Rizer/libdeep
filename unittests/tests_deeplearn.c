@@ -151,6 +151,12 @@ static void test_deeplearn_update()
 	}
 	assert(retval==1);
 
+	/* save a graph */
+	sprintf(filename,"%stemp_graph.png",DEEPLEARN_TEMP_DIRECTORY);
+	deeplearn_plot_history(&learner,
+						   filename, "Training Error",
+						   1024, 480);
+
 	/* free memory */
 	deeplearn_free(&learner);
 	deeplearn_free(&learner2);
