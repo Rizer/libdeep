@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "globals.h"
 #include "backprop.h"
 
 struct deepl {
@@ -39,6 +40,9 @@ struct deepl {
 	bp * autocoder;
 	int current_hidden_layer;
 	float BPerror;
+
+	float history[DEEPLEARN_HISTORY_SIZE];
+	int history_index, history_ctr, history_step;
 };
 typedef struct deepl deeplearn;
 

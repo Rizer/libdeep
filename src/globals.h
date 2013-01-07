@@ -2,5 +2,6 @@
 #define DEEPLEARN_GLOBALS_H
 
 #define DEEPLEARN_TEMP_DIRECTORY "/tmp/"
+#define DEEPLEARN_HISTORY_SIZE   100000
 
 #endif

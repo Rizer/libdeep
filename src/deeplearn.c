@@ -29,6 +29,36 @@
 
 #include "deeplearn.h"
 
+#define DEEPLEARN_UNKNOWN_ERROR 9999
+
+/* update the learning history */
+static void deeplean_update_history(deeplearn * learner)
+{
+	int i;
+	float error_value;
+
+	learner->history_ctr++;
+	if (learner->history_ctr >= learner->history_step) {
+		error_value = learner->BPerror;
+		if (error_value == DEEPLEARN_UNKNOWN_ERROR) {
+			error_value = 0;
+		}
+
+		learner->history[learner->history_index] =
+			error_value;
+		learner->history_index++;
+		learner->history_ctr = 0;
+
+		if (learner->history_index >= DEEPLEARN_HISTORY_SIZE) {
+			for (i = 0; i < learner->history_index; i++) {
+				learner->history[i/2] = learner->history[i];
+			}
+			learner->history_index /= 2;
+			learner->history_step *= 2;
+		}
+	}
+}
+
 /* initialise a deep learner */
 void deeplearn_init(deeplearn * learner,
 					int no_of_inputs,
@@ -37,6 +67,11 @@ void deeplearn_init(deeplearn * learner,
 					int no_of_outputs,
 					unsigned int * random_seed)
 {
+	/* clear history */
+	learner->history_index = 0;
+	learner->history_ctr = 0;
+	learner->history_step = 1;
+
 	/* set the current layer being trained */
 	learner->current_hidden_layer = 0;
 	
@@ -55,7 +90,7 @@ void deeplearn_init(deeplearn * learner,
 						learner->current_hidden_layer,
 						learner->autocoder);
 
-	learner->BPerror = 9999;
+	learner->BPerror = DEEPLEARN_UNKNOWN_ERROR;
 }
 
 void deeplearn_feed_forward(deeplearn * learner)
@@ -102,7 +137,7 @@ void deeplearn_update(deeplearn * learner,
 									learner->current_hidden_layer,
 									learner->autocoder);
 			}
-			learner->BPerror = 9999;
+			learner->BPerror = DEEPLEARN_UNKNOWN_ERROR;
 		}
 	}
 	else {
@@ -112,6 +147,9 @@ void deeplearn_update(deeplearn * learner,
 		/* update the backprop error value */
 		learner->BPerror = learner->net->BPerror;
 	}
+
+	/* record the history of error values */
+	deeplean_update_history(learner);
 }
 
 /* free the deep learner's allocated memory */
@@ -161,6 +199,13 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
 		val = 0;
 		retval = fwrite(&val, sizeof(int), 1, fp);
 	}
+
+	retval = fwrite(&learner->history_index, sizeof(int), 1, fp);
+	retval = fwrite(&learner->history_ctr, sizeof(int), 1, fp);
+	retval = fwrite(&learner->history_step, sizeof(int), 1, fp);
+	retval = fwrite(learner->history, sizeof(float),
+					learner->history_index, fp);
+
 	return retval;
 }
 
@@ -183,6 +228,13 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 	else {
 		learner->autocoder = 0;
 	}
+
+	retval = fread(&learner->history_index, sizeof(int), 1, fp);
+	retval = fread(&learner->history_ctr, sizeof(int), 1, fp);
+	retval = fread(&learner->history_step, sizeof(int), 1, fp);
+	retval = fread(learner->history, sizeof(float),
+				   learner->history_index, fp);
+
 	return retval;
 }
 
@@ -191,7 +243,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 int deeplearn_compare(deeplearn * learner1,
 					  deeplearn * learner2)
 {
-	int retval;
+	int retval,i;
 
 	if (learner1->current_hidden_layer !=
 		learner2->current_hidden_layer) {
@@ -205,6 +257,24 @@ int deeplearn_compare(deeplearn * learner1,
 	if ((learner1->autocoder==0) !=
 		(learner2->autocoder==0)) {
 		return -4;
+	}
+	if (learner1->history_index !=
+		learner2->history_index) {
+		return -5;
+	}
+	if (learner1->history_ctr !=
+		learner2->history_ctr) {
+		return -6;
+	}
+	if (learner1->history_step !=
+		learner2->history_step) {
+		return -7;
+	}
+	for (i = 0; i < learner1->history_index; i++) {
+		if (learner1->history[i] !=
+			learner2->history[i]) {
+			return -8;
+		}
 	}
 	return 1;
 }

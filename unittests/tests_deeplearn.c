@@ -56,15 +56,17 @@ static void test_deeplearn_init()
 
 static void test_deeplearn_update()
 {
-	deeplearn learner;
+	deeplearn learner, learner2;
 	int no_of_inputs=10;
 	int no_of_hiddens=4;
 	int hidden_layers=2;
 	int no_of_outputs=2;
-	int itt,i;
+	int itt,i,retval;
 	unsigned int random_seed = 123;
 	float max_backprop_error = 0.03f;
 	int itterations[3];
+	char filename[256];
+	FILE * fp;
 
 	printf("test_deeplearn_update...");
 
@@ -128,8 +130,30 @@ static void test_deeplearn_update()
 	/* we expect that there will be some non-zero error */
 	assert(learner.BPerror!=0);
 
+	sprintf(filename,"%stemp_deep.dat",DEEPLEARN_TEMP_DIRECTORY);
+
+	/* save the first learner */
+	fp = fopen(filename,"wb");
+	assert(fp!=0);
+	deeplearn_save(fp, &learner);
+	fclose(fp);
+
+	/* load into the second learner */
+	fp = fopen(filename,"rb");
+	assert(fp!=0);
+	deeplearn_load(fp, &learner2, &random_seed);
+	fclose(fp);
+
+	/* compare the two */
+	retval = deeplearn_compare(&learner, &learner2);
+	if (retval<1) {
+		printf("\nretval = %d\n",retval);
+	}
+	assert(retval==1);
+
 	/* free memory */
 	deeplearn_free(&learner);
+	deeplearn_free(&learner2);
 
 	printf("Ok\n");
 }
