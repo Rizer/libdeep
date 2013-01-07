@@ -39,7 +39,8 @@
 #include <dirent.h>
 #include "pnglite.h"
 
-unsigned char * deeplearn_read_png(char * filename, png_t * ptr);
+void deeplearn_read_png(char * filename, png_t * ptr,
+						unsigned char **buffer);
 int deeplearn_write_png(char* filename,
 						int width, int height,
 						unsigned char *buffer);

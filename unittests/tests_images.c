@@ -86,7 +86,7 @@ static void test_load_image()
 	save_image(filename);
 
 	/* load image from file */
-	buffer = deeplearn_read_png(filename, &ptr);
+	deeplearn_read_png(filename, &ptr, &buffer);
 
 	/* check image properties */
 	assert(ptr.width==80);

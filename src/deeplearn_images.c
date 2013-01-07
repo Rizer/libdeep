@@ -29,10 +29,11 @@
 
 #include "deeplearn_images.h"
 
-unsigned char * deeplearn_read_png(char * filename, png_t * ptr)
+void deeplearn_read_png(char * filename, png_t * ptr,
+						unsigned char ** buffer)
 {
     int i,j,retval;
-    unsigned char * buffer = NULL, * buffer2 = NULL;
+    unsigned char * buff = NULL, * buff2 = NULL;
 
     png_init(0,0);
     retval = png_open_file(ptr, filename);
@@ -93,58 +94,63 @@ unsigned char * deeplearn_read_png(char * filename, png_t * ptr)
             break;
         }
         }
-        return buffer;
+		*buffer = NULL;
+        return;
     }
 
 	/* single byte per pixel */
     if (ptr->bpp == 1)
     {
-		buffer =
+		buff =
 			(unsigned char *)malloc(ptr->width *
 									ptr->height *
 									sizeof(unsigned char));
-		png_get_data(ptr, buffer);
+		png_get_data(ptr, buff);
 
-        buffer2 =
+        buff2 =
 			(unsigned char *)malloc(ptr->width * ptr->height * 3);
 		j = 0;
         for (i = 0; i < ptr->width * ptr->height; i++, j += 3) {
-            buffer2[j] = buffer[i];
-            buffer2[j+1] = buffer[i];
-            buffer2[j+2] = buffer[i];
+            buff2[j] = buff[i];
+            buff2[j+1] = buff[i];
+            buff2[j+2] = buff[i];
         }
-        free(buffer);
-        buffer = buffer2;
-		return buffer;
+        free(buff);
+        *buffer = buff2;
+		return;
 	}
 
     if (ptr->bpp < 3)
     {
         printf("Not enought bytes per pixel (%d)\n", ptr->bpp);
-        return buffer;
+		*buffer = NULL;
+        return;
     }
 
-    buffer =
+    buff =
 		(unsigned char *)malloc(ptr->width * ptr->height * ptr->bpp);
-    png_get_data(ptr, buffer);
+    png_get_data(ptr, buff);
 
     if (ptr->bpp > 3)
     {
-        buffer2 =
+        buff2 =
 			(unsigned char *)malloc(ptr->width * ptr->height * 3);
         j=0;
         for (i=0; i<ptr->width * ptr->height * ptr->bpp;
 			 i+=ptr->bpp,j+=3)
         {
-            buffer2[j] = buffer[i];
-            buffer2[j+1] = buffer[i+1];
-            buffer2[j+2] = buffer[i+2];
+            buff2[j] = buff[i];
+            buff2[j+1] = buff[i+1];
+            buff2[j+2] = buff[i+2];
         }
-        free(buffer);
-        buffer = buffer2;
+        free(buff);
+        *buffer = buff2;
     }
+	else {
+		*buffer = buff;
+	}
 
-    return buffer;
+    return;
 }
 
 int deeplearn_write_png(char* filename,
@@ -264,7 +270,7 @@ int deeplearn_load_training_images(char * images_directory,
 					(filename[len-1]==extension[2])) {
 
 					/* obtain an image from the filename */
-					img = deeplearn_read_png(filename, &ptr);
+					deeplearn_read_png(filename, &ptr, &img);
 
 					/* was an image returned? */
 					if (img != NULL) {
