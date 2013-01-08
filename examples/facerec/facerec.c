@@ -33,8 +33,8 @@
 #include "libdeep/deeplearn_images.h"
 
 /* the dimensions of each face image */
-int image_width = 80;
-int image_height = 80;
+int image_width = 32;
+int image_height = 32;
 
 /* the number of face images */
 int no_of_images;
@@ -47,17 +47,20 @@ deeplearn learner;
 /* train the deep learner */
 static void facerec_training()
 {
-	int patch_size = image_width/10;
-	int no_of_inputs = patch_size*patch_size;
-	int no_of_hiddens = patch_size;
+	int no_of_inputs = image_width*image_height;
+	int no_of_hiddens = 16*16;
 	int hidden_layers=4;
-	int no_of_outputs=5;
-	int itt,i,tx,ty;
+	int no_of_outputs=3*3;
+	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.01f;
+	float max_backprop_error = 0.001f;
 	char filename[256];
 	char title[256];
+	char weights_filename[256];
+	int weights_image_width = 480;
+	int weights_image_height = 800;
 
+	sprintf(weights_filename,"%s","weights.png");
 	sprintf(title, "%s", "Face Image Training");
 
 	/* create the learner */
@@ -69,15 +72,10 @@ static void facerec_training()
 	/* perform pre-training with an autocoder */
 	itt = 0;
 	while (learner.current_hidden_layer < hidden_layers) {
-		/* pick a random patch location */
-		tx = rand_num(&random_seed)%(image_width-patch_size);
-		ty = rand_num(&random_seed)%(image_height-patch_size);
-
 		/* load the patch into the network inputs */
-		deeplearn_inputs_from_image_patch(&learner,
-										  images[rand_num(&random_seed)%no_of_images],
-										  image_width, image_height,
-										  tx, ty);
+		deeplearn_inputs_from_image(&learner,
+									images[rand_num(&random_seed)%no_of_images],
+									image_width, image_height);
 
 		deeplearn_update(&learner, max_backprop_error);
 		itt++;
@@ -88,22 +86,24 @@ static void facerec_training()
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
 								   filename, title,
-								   1024, 480);			
+								   1024, 480);
+			/* plot the weights */
+			if ((&learner)->autocoder != 0) {
+				bp_plot_weights((&learner)->autocoder,
+								weights_filename,
+								weights_image_width,
+								weights_image_height);
+			}
 		}
 	}
 
 	/* perform the final training between the last
 	   hidden layer and the outputs */
 	while (learner.BPerror > max_backprop_error) {
-		/* pick a random patch location */
-		tx = rand_num(&random_seed)%(image_width-patch_size);
-		ty = rand_num(&random_seed)%(image_height-patch_size);
-
 		/* load the patch into the network inputs */
-		deeplearn_inputs_from_image_patch(&learner,
-										  images[rand_num(&random_seed)%no_of_images],
-										  image_width, image_height,
-										  tx, ty);
+		deeplearn_inputs_from_image(&learner,
+									images[rand_num(&random_seed)%no_of_images],
+									image_width, image_height);
 
 		for (i = 0; i < no_of_outputs; i++) {
 			deeplearn_set_output(&learner,i,
@@ -119,6 +119,11 @@ static void facerec_training()
 			deeplearn_plot_history(&learner,
 								   filename, title,
 								   1024, 480);			
+			/* plot the weights */
+			bp_plot_weights((&learner)->net,
+							weights_filename,
+							weights_image_width,
+							weights_image_height);
 		}
 	}
 
@@ -127,6 +132,11 @@ static void facerec_training()
 	deeplearn_plot_history(&learner,
 						   filename, title,
 						   1024, 480);
+	/* plot the weights */
+	bp_plot_weights((&learner)->net,
+					weights_filename,
+					weights_image_width,
+					weights_image_height);
 }
 
 /* deallocate images */

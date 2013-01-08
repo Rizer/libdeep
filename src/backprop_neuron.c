@@ -39,6 +39,9 @@ static void bp_neuron_init_weights(bp_neuron * n,
   
     min = minVal;
     max = maxVal;
+
+	n->min_weight = 9999;
+	n->max_weight = -9999;
   
 	/* do the weights */
 	for (i = 0; i < n->NoOfInputs; i++) {
@@ -46,6 +49,12 @@ static void bp_neuron_init_weights(bp_neuron * n,
 			min + (((rand_num(random_seed)%10000)/10000.0f) *
 				   (max - min));
 		n->lastWeightChange[i] = 0;
+		if (n->weights[i] < n->min_weight) {
+			n->min_weight = n->weights[i];
+		}
+		if (n->weights[i] > n->max_weight) {
+			n->max_weight = n->weights[i];
+		}
 	}
   
 	/* dont forget the bias value */
@@ -202,12 +211,20 @@ void bp_neuron_learn(bp_neuron * n,
 	gradient = afact * n->BPerror;
 	n->lastBiasChange = e * (n->lastBiasChange + 1.0f) * gradient;
 	n->bias += n->lastBiasChange;
+	n->min_weight = 9999;
+	n->max_weight = -9999;
 	for (i = 0; i < n->NoOfInputs; i++) {
 		if (n->inputs[i] != 0) {
 			n->lastWeightChange[i] =
 				e * (n->lastWeightChange[i] + 1) *
 				gradient * n->inputs[i]->value;
 			n->weights[i] += n->lastWeightChange[i];
+			if (n->weights[i] < n->min_weight) {
+				n->min_weight = n->weights[i];
+			}
+			if (n->weights[i] > n->max_weight) {
+				n->max_weight = n->weights[i];
+			}
 		}
 	}
 }
@@ -225,6 +242,9 @@ int bp_neuron_save(FILE * fp, bp_neuron * n)
 					n->NoOfInputs, fp);
 	retval = fwrite(n->lastWeightChange, sizeof(float),
 					n->NoOfInputs, fp);
+
+	retval = fwrite(&n->min_weight, sizeof(float), 1, fp);
+	retval = fwrite(&n->max_weight, sizeof(float), 1, fp);
 
 	retval = fwrite(&n->bias, sizeof(float), 1, fp);
 	retval = fwrite(&n->lastBiasChange, sizeof(float), 1, fp);
@@ -244,6 +264,9 @@ int bp_neuron_load(FILE * fp, bp_neuron * n)
 				   n->NoOfInputs, fp);
 	retval = fread(n->lastWeightChange, sizeof(float),
 				   n->NoOfInputs, fp);
+
+	retval = fread(&n->min_weight, sizeof(float), 1, fp);
+	retval = fread(&n->max_weight, sizeof(float), 1, fp);
 
 	retval = fread(&n->bias, sizeof(float), 1, fp);
 	retval = fread(&n->lastBiasChange, sizeof(float), 1, fp);

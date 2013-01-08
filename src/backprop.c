@@ -290,6 +290,117 @@ void bp_inputs_from_image(bp * net,
 	}
 }
 
+/* plots weight matrices within an image */
+void bp_plot_weights(bp * net,
+					 char * filename,
+					 int image_width, int image_height)
+{
+	int layer, neurons_x, neurons_y, ty, by, h, x, y, ix, iy;
+	int wx, wy, inputs_x, inputs_y, n, i, unit, no_of_neurons;
+	int no_of_weights,wdth;
+	float neuronx, neurony,dw;
+	bp_neuron ** neurons, * curr_neuron;
+	unsigned char * img;
+
+	/* allocate memory for the image */
+	img = (unsigned char*)malloc(image_width*image_height*3);
+
+	/* clear the image with a white background */
+	memset((void*)img,'\255',image_width*image_height*3);
+
+	/* dimension of the neurons matrix for each layer */
+	neurons_x = (int)sqrt(net->NoOfHiddens);
+	neurons_y = (net->NoOfHiddens/neurons_x);
+
+	/* dimensions of the weight matrix */
+	inputs_x = (int)sqrt(net->NoOfInputs);
+	inputs_y = (net->NoOfInputs/inputs_x);
+
+	no_of_weights = net->NoOfInputs;;
+
+	/* plot the inputs */
+	ty = 0;
+	by = image_height/(net->HiddenLayers+2);
+	h = (by-ty)*95/100;
+	wdth = h;
+	if (wdth>=image_width) wdth=image_width;
+	for (y = 0; y < h; y++) {
+		iy = y*inputs_y/h;
+		for (x = 0; x < wdth; x++) {
+			ix = x*inputs_x/wdth;
+			unit = (iy*inputs_x) + ix;
+			if (unit < net->NoOfInputs) {
+				n = (y*image_width + x)*3;
+				img[n] = (unsigned char)(net->inputs[unit]->value*255);
+				img[n+1] = img[n];
+				img[n+2] = img[n];
+			}
+		}
+	}
+
+	for (layer = 0; layer < net->HiddenLayers+1; layer++) {
+
+		/* vertical top and bottom coordinates */
+		ty = (layer+1)*image_height/(net->HiddenLayers+2);
+		by = (layer+2)*image_height/(net->HiddenLayers+2);
+		h = (by-ty)*95/100;
+
+		/* number of patches across and down for the final layer */
+		if (layer == net->HiddenLayers) {
+			neurons_x = (int)sqrt(net->NoOfOutputs);
+			neurons_y = (net->NoOfOutputs/neurons_x);
+			neurons = net->outputs;
+			no_of_neurons = net->NoOfOutputs;
+		}
+		else {
+			neurons = net->hiddens[layer];
+			no_of_neurons = net->NoOfHiddens;
+		}
+
+		/* for every pixel within the region */
+		for (y = ty; y < by; y++) {
+			neurony = (y-ty)*neurons_y/(float)h;
+			/* y coordinate within the weights */
+			wy = (neurony - (int)neurony)*inputs_y;
+			for (x = 0; x < image_width; x++) {
+				neuronx = x*neurons_x/(float)image_width;
+				/* x coordinate within the weights */
+				wx = (neuronx - (int)neuronx)*inputs_x;
+				/* coordinate within the image */
+				n = ((y * image_width) + x)*3;
+				/* weight index */
+				i = (wy*inputs_x) + wx;
+				if (i < no_of_weights) {
+					/* neuron index */
+					unit = ((int)neurony*neurons_x) + (int)neuronx;
+					if (unit < no_of_neurons)  {
+						curr_neuron = neurons[unit];
+						dw = curr_neuron->max_weight - 
+							curr_neuron->min_weight;
+						if (dw>0.0001f) {
+							img[n] =
+								(int)((curr_neuron->weights[i]-curr_neuron->min_weight)*255/dw);
+							img[n+1] = img[n];
+							img[n+2] = img[n];
+						}
+					}
+				}
+			}
+		}
+		/* dimensions of the weight matrix for the next layer */
+		inputs_x = (int)sqrt(net->NoOfHiddens);
+		inputs_y = (net->NoOfHiddens/inputs_x);
+		no_of_weights = net->NoOfHiddens;;
+	}
+
+	/* write the image to file */
+	deeplearn_write_png(filename,
+						image_width, image_height, img);
+
+	/* free the image memory */
+	free(img);
+}
+
 static float bp_get_input(bp * net, int index)
 {
 	bp_neuron * n;

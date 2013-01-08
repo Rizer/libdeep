@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "deeplearn_random.h"
+#include "deeplearn_images.h"
 #include "backprop_neuron.h"
 
 struct backprop {
@@ -78,5 +79,8 @@ void bp_inputs_from_image_patch(bp * net,
 void bp_inputs_from_image(bp * net,
 						  unsigned char * img,
 						  int image_width, int image_height);
+void bp_plot_weights(bp * net,
+					 char * filename,
+					 int image_width, int image_height);
 
 #endif

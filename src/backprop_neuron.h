@@ -46,6 +46,7 @@ struct bp_n {
 	float * weights;
 	float * lastWeightChange;
 	struct bp_n ** inputs;
+	float min_weight,max_weight;
 	float bias;
 	float lastBiasChange;
 	float BPerror;

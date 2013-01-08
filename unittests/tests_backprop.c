@@ -42,6 +42,59 @@ static void test_backprop_neuron_init()
 	printf("Ok\n");
 }
 
+static void test_backprop_inputs_from_image()
+{
+	bp net;
+	int image_width=10;
+	int image_height=10;
+	int x,y,i=0;
+	unsigned char * img;
+	int no_of_inputs=image_width*image_height;
+	int no_of_hiddens=4*4;
+	int hidden_layers=2;
+	int no_of_outputs=2*2;
+	unsigned int random_seed = 123;
+
+	printf("test_backprop_inputs_from_image...");
+
+	/* create a mono image */
+	img = (unsigned char*)malloc(image_width*image_height);
+	for (y = 0; y < image_height; y++) {
+		for (x = 0; x < image_width; x++,i++) {
+			img[i] = i%256;
+		}
+	}
+
+	/* create a network */
+	bp_init(&net,
+			no_of_inputs, no_of_hiddens,
+			hidden_layers,
+			no_of_outputs, &random_seed);
+	assert((&net)->inputs!=0);
+	assert((&net)->hiddens!=0);
+	assert((&net)->outputs!=0);
+
+	/* set inputs to zero */
+	for (i = 0; i < no_of_inputs; i++) {
+		(&net)->inputs[i]->value = 0;
+	}
+
+	/* insert the image into the input units */
+	bp_inputs_from_image(&net, img, image_width, image_height);
+
+	/* check that the imputs are within range */
+	for (i = 0; i < no_of_inputs; i++) {
+		assert((&net)->inputs[i]->value > 0.1f);
+		assert((&net)->inputs[i]->value < 0.9f);
+	}
+
+	/* free the memory */
+	free(img);
+	bp_free(&net);
+
+	printf("Ok\n");
+}
+
 static void test_backprop_neuron_copy()
 {
 	bp_neuron n1, n2;
@@ -466,6 +519,7 @@ int run_tests_backprop()
 	test_backprop_deep();
 	test_backprop_neuron_save_load();
 	test_backprop_save_load();
+	test_backprop_inputs_from_image();
 
 	printf("All backprop tests completed\n");
 	return 1;
