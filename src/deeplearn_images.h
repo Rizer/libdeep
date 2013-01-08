@@ -37,6 +37,7 @@
 #include <string.h>
 #include <zlib.h>
 #include <dirent.h>
+#include <assert.h>
 #include "pnglite.h"
 
 void deeplearn_read_png(char * filename, png_t * ptr,

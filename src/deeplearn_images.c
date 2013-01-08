@@ -32,7 +32,7 @@
 void deeplearn_read_png(char * filename, png_t * ptr,
 						unsigned char ** buffer)
 {
-    int i,j,retval;
+    int i,j,retval,tot;
     unsigned char * buff = NULL, * buff2 = NULL;
 
     png_init(0,0);
@@ -98,8 +98,6 @@ void deeplearn_read_png(char * filename, png_t * ptr,
         return;
     }
 
-	printf("bpp: %d\n",ptr->bpp);
-
 	/* single byte per pixel */
     if (ptr->bpp == 1)
     {
@@ -132,6 +130,15 @@ void deeplearn_read_png(char * filename, png_t * ptr,
     buff =
 		(unsigned char *)malloc(ptr->width * ptr->height * ptr->bpp);
     png_get_data(ptr, buff);
+
+	tot=0;
+	for (i = 0; i < ptr->width * ptr->height * ptr->bpp; i++) {
+		tot += buff[i];
+	}
+	if (tot==0) {
+		printf("\nAll pixels are zero\n");
+	}
+	assert(tot>0);
 
     if (ptr->bpp > 3)
     {
