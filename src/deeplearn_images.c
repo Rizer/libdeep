@@ -98,6 +98,8 @@ void deeplearn_read_png(char * filename, png_t * ptr,
         return;
     }
 
+	printf("bpp: %d\n",ptr->bpp);
+
 	/* single byte per pixel */
     if (ptr->bpp == 1)
     {
