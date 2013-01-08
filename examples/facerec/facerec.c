@@ -33,8 +33,8 @@
 #include "libdeep/deeplearn_images.h"
 
 /* the dimensions of each face image */
-int image_width = 32;
-int image_height = 32;
+int image_width = 80;
+int image_height = 80;
 
 /* the number of face images */
 int no_of_images;
@@ -53,7 +53,7 @@ static void facerec_training()
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.001f;
+	float max_backprop_error = 0.01f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
@@ -158,6 +158,17 @@ static void free_mem(unsigned char ** images,
 	deeplearn_free(&learner);
 }
 
+static void plot_training_images()
+{
+	int max_images = no_of_images;
+
+	if (max_images > 4) max_images = 4;
+
+	bp_plot_images(images, max_images,
+				   image_width, image_height,
+				   "training_images.png");
+}
+
 int main(int argc, char* argv[])
 {
 	images = NULL;
@@ -168,6 +179,8 @@ int main(int argc, char* argv[])
 									   image_width, image_height);
 	
 	printf("No of images: %d\n", no_of_images);
+
+	plot_training_images();
 
 	facerec_training();
 

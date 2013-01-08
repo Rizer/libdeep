@@ -42,6 +42,8 @@ void bp_init(bp * net,
 	net->learningRate = 0.2f;
 	net->noise = 0.0f;
 	net->random_seed = *random_seed;
+	net->BPerror = DEEPLEARN_UNKNOWN_ERROR;
+	net->BPerrorTotal = DEEPLEARN_UNKNOWN_ERROR;
   
 	net->NoOfInputs = no_of_inputs;
 	net->inputs = (bp_neuron**)malloc(no_of_inputs*sizeof(bp_neuron*));
@@ -152,7 +154,7 @@ void bp_feed_forward_layers(bp * net, int layers)
 {  
 	int i,l;
 	bp_neuron * n;
-	int max = layers;
+	int max = layers+1;
 
 	if (layers >= net->HiddenLayers) {
 		max = net->HiddenLayers;
@@ -485,6 +487,7 @@ void bp_create_autocoder(bp * net, int hidden_layer, bp * autocoder)
 void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
 {
 	int i;
+	float hidden_value;
 
 	/* feed forward to the given hidden layer */
 	if (hidden_layer > 0) {
@@ -498,8 +501,9 @@ void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
 		/* copy the hidden unit values to the inputs
 		   of the autocoder */
 		for (i = 0; i < net->NoOfHiddens; i++) {
-			bp_set_input(autocoder,i,
-						 bp_get_hidden(net, hidden_layer, i));
+			hidden_value = bp_get_hidden(net, hidden_layer, i);
+			assert(hidden_value > 0);
+			bp_set_input(autocoder,i, hidden_value);
 		}
 	}
 	else {

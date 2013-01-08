@@ -102,13 +102,13 @@ void deeplearn_read_png(char * filename, png_t * ptr,
     if (ptr->bpp == 1)
     {
 		buff =
-			(unsigned char *)malloc(ptr->width *
-									ptr->height *
+			(unsigned char *)malloc(ptr->width * ptr->height *
 									sizeof(unsigned char));
 		png_get_data(ptr, buff);
 
         buff2 =
-			(unsigned char *)malloc(ptr->width * ptr->height * 3);
+			(unsigned char *)malloc(ptr->width * ptr->height * 3 *
+									sizeof(unsigned char));
 		j = 0;
         for (i = 0; i < ptr->width * ptr->height; i++, j += 3) {
             buff2[j] = buff[i];
@@ -300,3 +300,36 @@ int deeplearn_load_training_images(char * images_directory,
 
 	return no_of_images;
 }
+
+/* plots mono images */
+void bp_plot_images(unsigned char **images,
+					int no_of_images,
+					int image_width, int image_height,
+					char * filename)
+{
+	int i,y,x,n1,n2;
+	unsigned char * img;
+
+	/* allocate memory for the image */
+	img = (unsigned char*)malloc(image_width*image_height*no_of_images*3);
+
+	for (i = 0; i < no_of_images; i++) {
+		for (y = 0; y < image_height; y++) {
+			for (x = 0; x < image_width; x++) {
+				n1 = ((y+(i*image_height))*image_width + x)*3;
+				n2 = (y*image_width) + x;
+				img[n1] = images[i][n2];
+				img[n1+1] = img[n1];
+				img[n1+2] = img[n1];
+			}
+		}
+	}
+
+	/* write the image to file */
+	deeplearn_write_png(filename,
+						image_width, image_height*no_of_images, img);
+
+	/* free the image memory */
+	free(img);
+}
+

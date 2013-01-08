@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "globals.h"
 #include "deeplearn_random.h"
 #include "deeplearn_images.h"
 #include "backprop_neuron.h"

@@ -63,7 +63,7 @@ static void test_deeplearn_update()
 	int no_of_outputs=2;
 	int itt,i,retval;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.03f;
+	float max_backprop_error = 0.001f;
 	int itterations[3];
 	char filename[256];
 	FILE * fp;
@@ -86,7 +86,8 @@ static void test_deeplearn_update()
 	/* perform pre-training with an autocoder */
 	for (itt = 0; itt < 10000; itt++) {
 		for (i = 0; i < no_of_inputs; i++) {
-			deeplearn_set_input(&learner,i,i/(float)no_of_inputs);
+			deeplearn_set_input(&learner,i,
+								0.25f + (i*0.5f/(float)no_of_inputs));
 		}
 		deeplearn_update(&learner, max_backprop_error);
 

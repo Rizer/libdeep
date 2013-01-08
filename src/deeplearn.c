@@ -29,8 +29,6 @@
 
 #include "deeplearn.h"
 
-#define DEEPLEARN_UNKNOWN_ERROR 9999
-
 /* update the learning history */
 static void deeplean_update_history(deeplearn * learner)
 {
@@ -112,7 +110,7 @@ void deeplearn_update(deeplearn * learner,
 		/* update the backprop error value */
 		learner->BPerror = learner->autocoder->BPerror;
 
-		/* if below the errro threshold */
+		/* if below the error threshold */
 		if (learner->BPerror < max_backprop_error) {
 			/* copy the hidden units */
 			bp_update_from_autocoder(learner->net,
