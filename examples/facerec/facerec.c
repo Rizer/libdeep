@@ -97,6 +97,17 @@ static void facerec_training()
 		}
 	}
 
+	/* save a graph */
+	sprintf(filename,"%s","training_error.png");
+	deeplearn_plot_history(&learner,
+						   filename, title,
+						   1024, 480);			
+	/* plot the weights */
+	bp_plot_weights((&learner)->net,
+					weights_filename,
+					weights_image_width,
+					weights_image_height);
+
 	/* perform the final training between the last
 	   hidden layer and the outputs */
 	while (learner.BPerror > max_backprop_error) {

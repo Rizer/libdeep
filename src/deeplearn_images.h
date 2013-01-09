@@ -40,8 +40,18 @@
 #include <assert.h>
 #include "pnglite.h"
 
-void deeplearn_read_png(char * filename, png_t * ptr,
-						unsigned char **buffer);
+
+#include <unistd.h>
+#include <stdio.h>
+#include <stdarg.h>
+
+#define PNG_DEBUG 3
+#include <png.h>
+
+
+void deeplearn_read_png(char * filename,
+						int * width, int * height,
+						unsigned char ** buffer);
 int deeplearn_write_png(char* filename,
 						int width, int height,
 						unsigned char *buffer);

@@ -81,8 +81,7 @@ static void test_load_image()
 {
 	char filename[256], commandstr[256];
 	unsigned char * buffer;
-	png_t ptr;
-	int i;
+	int i,width,height;
 
 	printf("test_load_image...");
 
@@ -91,15 +90,14 @@ static void test_load_image()
 	save_image(filename);
 
 	/* load image from file */
-	deeplearn_read_png(filename, &ptr, &buffer);
+	deeplearn_read_png(filename, &width, &height, &buffer);
 
 	/* check image properties */
-	assert(ptr.width==80);
-	assert(ptr.height==80);
-	assert(ptr.bpp==3);
+	assert(width==80);
+	assert(height==80);
 
 	/* check the pixels */
-	for (i = 0; i < ptr.width*ptr.height*3; i+=3) {
+	for (i = 0; i < width*height*3; i+=3) {
 		assert(buffer[i] == i%256);
 		assert(buffer[i+1] == 255 - buffer[i]);
 		assert(buffer[i+2] == buffer[i]);

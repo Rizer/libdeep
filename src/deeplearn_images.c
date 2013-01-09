@@ -29,7 +29,193 @@
 
 #include "deeplearn_images.h"
 
-void deeplearn_read_png(char * filename, png_t * ptr,
+
+void deeplearn_read_png(char * filename,
+						int * width, int * height,
+						unsigned char ** buffer)
+{
+	png_byte color_type;
+	png_byte bit_depth;
+
+	png_structp png_ptr;
+	png_infop info_ptr;
+	int number_of_passes,y,n,bpp,i;
+	png_bytep * row_pointers;
+	char header[8];    // 8 is the maximum size that can be checked
+
+	/* open file and test for it being a png */
+	FILE *fp = fopen(filename, "rb");
+	if (!fp)
+		printf("[read_png_file] File %s could not be opened for reading", filename);
+	fread(header, 1, 8, fp);
+	if (png_sig_cmp((png_bytep)header, 0, 8))
+		printf("[read_png_file] File %s is not recognized as a PNG file", filename);
+
+
+	/* initialize stuff */
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!png_ptr)
+		printf("[read_png_file] png_create_read_struct failed");
+
+	info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+		printf("[read_png_file] png_create_info_struct failed");
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+		printf("[read_png_file] Error during init_io");
+
+	png_init_io(png_ptr, fp);
+	png_set_sig_bytes(png_ptr, 8);
+
+	png_read_info(png_ptr, info_ptr);
+
+	*width = png_get_image_width(png_ptr, info_ptr);
+	*height = png_get_image_height(png_ptr, info_ptr);
+	color_type = png_get_color_type(png_ptr, info_ptr);
+	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+	number_of_passes = png_set_interlace_handling(png_ptr);
+	png_read_update_info(png_ptr, info_ptr);
+
+
+	/* read the image from file */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		printf("[read_png_file] Error during read_image");
+
+	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * (*height));
+	for (y = 0; y < *height; y++) {
+		row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
+	}
+	png_read_image(png_ptr, row_pointers);
+
+	/* convert into a standard form */
+	*buffer = (unsigned char*)malloc((*width)*(*height)*3*
+									 sizeof(unsigned char));
+	n = 0;
+	bpp = png_get_rowbytes(png_ptr,info_ptr)/(*width);
+	for (y = 0; y < *height; y++) {		
+		for (i = 0; i < png_get_rowbytes(png_ptr,info_ptr);
+			 i += bpp, n += 3) {
+			switch(bpp) {
+			case 3: {
+				(*buffer)[n] = (unsigned char)row_pointers[y][i];
+				(*buffer)[n+1] = (unsigned char)row_pointers[y][i+1];
+				(*buffer)[n+2] = (unsigned char)row_pointers[y][i+2];
+				break;
+			}
+			case 1: {
+				(*buffer)[n] = (unsigned char)row_pointers[y][i];
+				(*buffer)[n+1] = (*buffer)[n];
+				(*buffer)[n+2] = (*buffer)[n];
+				break;
+			}
+			case 6: {
+				(*buffer)[n] = (unsigned char)(row_pointers[y][i+1]>>8);
+				(*buffer)[n+1] = (unsigned char)(row_pointers[y][i+2]>>8);
+				(*buffer)[n+2] = (unsigned char)(row_pointers[y][i+4]>>8);
+				break;
+			}
+			}
+		}
+	}
+
+	/* free the row pointers */
+	for (y=0; y < *height; y++) free(row_pointers[y]);
+	free(row_pointers);
+
+	fclose(fp);
+}
+
+
+int deeplearn_write_png(char* filename,
+						int width, int height,
+						unsigned char *buffer)
+{
+	png_structp png_ptr;
+	png_infop info_ptr;
+	int y,n,i;
+	png_bytep * row_pointers;
+
+	/* create file */
+	FILE *fp = fopen(filename, "wb");
+	if (!fp)
+		printf("[write_png_file] File %s could not be opened for writing", filename);
+
+
+	/* initialize stuff */
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (!png_ptr)
+		printf("[write_png_file] png_create_write_struct failed");
+
+	info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+		printf("[write_png_file] png_create_info_struct failed");
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+		printf("[write_png_file] Error during init_io");
+
+	png_init_io(png_ptr, fp);
+
+	/* write header */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		printf("[write_png_file] Error during writing header");
+
+	/* create info */
+	png_set_IHDR(png_ptr, info_ptr, width, height,
+				 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+				 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	/* save the info */
+	png_write_info(png_ptr, info_ptr);
+
+	/* write bytes */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		printf("[write_png_file] Error during writing bytes");
+
+	/* create row pointers */
+	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * (height));
+	for (y = 0; y < height; y++) {
+		row_pointers[y] = (png_byte*) malloc(png_get_rowbytes(png_ptr,info_ptr));
+	}
+
+	/* save image data into row pointers */
+	n = 0;
+	for (y = 0; y < height; y++) {
+		for (i = 0; i < width*3; i++, n++) {
+			row_pointers[y][i] = buffer[n];
+		}
+	}
+
+	/* write the row pointers */
+	png_write_image(png_ptr, row_pointers);
+
+	/* end write */
+	if (setjmp(png_jmpbuf(png_ptr)))
+		printf("[write_png_file] Error during end of write");
+
+	png_write_end(png_ptr, NULL);
+
+	/* free row pointers */
+	for (y = 0; y < height; y++) {
+		free(row_pointers[y]);
+	}
+	free(row_pointers);
+
+	fclose(fp);
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+void deeplearn_read_png2(char * filename, png_t * ptr,
 						unsigned char ** buffer)
 {
     int i,j,retval,tot;
@@ -162,7 +348,7 @@ void deeplearn_read_png(char * filename, png_t * ptr,
     return;
 }
 
-int deeplearn_write_png(char* filename,
+int deeplearn_write_png2(char* filename,
 						int width, int height,
 						unsigned char *buffer)
 {
@@ -240,13 +426,10 @@ int deeplearn_load_training_images(char * images_directory,
 {
 	int ctr,no_of_images = 0;
     struct dirent **namelist;
-    int n,len;
+    int n,len,im_width,im_height;
 	unsigned char * img, * downsampled;
-	png_t ptr;
 	char * extension = "png";
 	char filename[256];
-
-	memset((void*)&ptr,'\0',sizeof(&ptr));
 
 	/* how many images are there? */
 	no_of_images = number_of_images(images_directory, extension);
@@ -279,7 +462,8 @@ int deeplearn_load_training_images(char * images_directory,
 					(filename[len-1]==extension[2])) {
 
 					/* obtain an image from the filename */
-					deeplearn_read_png(filename, &ptr, &img);
+					deeplearn_read_png(filename,
+									   &im_width, &im_height, &img);
 
 					/* was an image returned? */
 					if (img != NULL) {
@@ -287,7 +471,7 @@ int deeplearn_load_training_images(char * images_directory,
 						downsampled =
 							(unsigned char*)malloc(width*height*
 												   sizeof(unsigned char));
-						deeplearn_downsample(img, ptr.width, ptr.height,
+						deeplearn_downsample(img, im_width, im_height,
 											 downsampled, width, height);
 
 						(*images)[no_of_images] = downsampled;
@@ -298,7 +482,6 @@ int deeplearn_load_training_images(char * images_directory,
 					else {
 						(*images)[no_of_images] = NULL;
 					}
-					png_close_file(&ptr);
 					no_of_images++;
 				}
 			}
