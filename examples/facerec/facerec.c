@@ -53,7 +53,7 @@ static void facerec_training()
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.01f;
+	float max_backprop_error = 0.0001f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
@@ -81,7 +81,7 @@ static void facerec_training()
 		itt++;
 		printf("%d: %.5f\n",
 			   learner.current_hidden_layer, learner.BPerror);
-		if ((itt % 1000 == 0) && (itt>0)) {
+		if ((itt % 200 == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
@@ -124,17 +124,19 @@ static void facerec_training()
 
 		itt++;
 		printf("Final: %.5f\n",learner.BPerror);
-		if ((itt % 1000 == 0) && (itt>0)) {
+		if ((itt % 50 == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
 								   filename, title,
 								   1024, 480);			
 			/* plot the weights */
-			bp_plot_weights((&learner)->net,
-							weights_filename,
-							weights_image_width,
-							weights_image_height);
+			if ((&learner)->autocoder!=0) {
+				bp_plot_weights((&learner)->autocoder,
+								weights_filename,
+								weights_image_width,
+								weights_image_height);
+			}
 		}
 	}
 

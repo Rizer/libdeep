@@ -38,7 +38,6 @@
 #include <zlib.h>
 #include <dirent.h>
 #include <assert.h>
-#include "pnglite.h"
 
 
 #include <unistd.h>
