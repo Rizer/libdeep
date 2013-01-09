@@ -48,12 +48,12 @@ deeplearn learner;
 static void facerec_training()
 {
 	int no_of_inputs = image_width*image_height;
-	int no_of_hiddens = 16*16;
+	int no_of_hiddens = 8*8;
 	int hidden_layers=4;
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.01f;
+	float max_backprop_error = 0.0001f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
@@ -69,6 +69,10 @@ static void facerec_training()
 				   hidden_layers,
 				   no_of_outputs, &random_seed);
 
+
+	/* set learning rate */
+	deeplearn_set_learning_rate(&learner, 0.5f);
+
 	/* perform pre-training with an autocoder */
 	itt = 0;
 	while (learner.current_hidden_layer < hidden_layers) {
@@ -81,7 +85,7 @@ static void facerec_training()
 		itt++;
 		printf("%d: %.5f\n",
 			   learner.current_hidden_layer, learner.BPerror);
-		if ((itt % 100 == 0) && (itt>0)) {
+		if ((itt % 500 == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
@@ -124,7 +128,7 @@ static void facerec_training()
 
 		itt++;
 		printf("Final: %.5f\n",learner.BPerror);
-		if ((itt % 100 == 0) && (itt>0)) {
+		if ((itt % 500 == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,

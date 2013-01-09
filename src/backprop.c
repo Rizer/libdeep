@@ -333,7 +333,7 @@ void bp_plot_weights(bp * net,
 
 	/* plot the inputs */
 	ty = 0;
-	by = image_height/(net->HiddenLayers+2);
+	by = image_height/(net->HiddenLayers+3);
 	h = (by-ty)*95/100;
 	wdth = h;
 	if (wdth>=image_width) wdth=image_width;
@@ -354,8 +354,8 @@ void bp_plot_weights(bp * net,
 	for (layer = 0; layer < net->HiddenLayers+1; layer++) {
 
 		/* vertical top and bottom coordinates */
-		ty = (layer+1)*image_height/(net->HiddenLayers+2);
-		by = (layer+2)*image_height/(net->HiddenLayers+2);
+		ty = (layer+1)*image_height/(net->HiddenLayers+3);
+		by = (layer+2)*image_height/(net->HiddenLayers+3);
 		h = (by-ty)*95/100;
 
 		/* number of patches across and down for the final layer */
@@ -390,9 +390,10 @@ void bp_plot_weights(bp * net,
 						curr_neuron = neurons[unit];
 						dw = curr_neuron->max_weight - 
 							curr_neuron->min_weight;
-						if (dw>0.0001f) {
+						if (dw > 0.0001f) {
 							img[n] =
-								(int)((curr_neuron->weights[i]-curr_neuron->min_weight)*255/dw);
+								(int)((curr_neuron->weights[i] -
+									   curr_neuron->min_weight)*255/dw);
 							img[n+1] = img[n];
 							img[n+2] = img[n];
 						}
@@ -404,6 +405,29 @@ void bp_plot_weights(bp * net,
 		inputs_x = (int)sqrt(net->NoOfHiddens);
 		inputs_y = (net->NoOfHiddens/inputs_x);
 		no_of_weights = net->NoOfHiddens;;
+	}
+
+	ty = (net->HiddenLayers+2)*image_height/(net->HiddenLayers+3);
+	by = (net->HiddenLayers+3)*image_height/(net->HiddenLayers+3);
+	h = (by-ty)*95/100;
+
+	inputs_x = (int)sqrt(net->NoOfOutputs);
+	inputs_y = (net->NoOfOutputs/inputs_x);
+
+	wdth = h;
+	if (wdth >= image_width) wdth = image_width;
+	for (y = 0; y < h; y++) {
+		iy = y*inputs_y/h;
+		for (x = 0; x < wdth; x++) {
+			ix = x*inputs_x/wdth;
+			unit = (iy*inputs_x) + ix;
+			if (unit < net->NoOfOutputs) {
+				n = ((ty+y)*image_width + x)*3;
+				img[n] = (unsigned char)(net->outputs[unit]->value*255);
+				img[n+1] = img[n];
+				img[n+2] = img[n];
+			}
+		}
 	}
 
 	/* write the image to file */

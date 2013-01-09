@@ -134,6 +134,10 @@ void deeplearn_update(deeplearn * learner,
 				bp_create_autocoder(learner->net,
 									learner->current_hidden_layer,
 									learner->autocoder);
+
+				/* set the learning rate */
+				learner->autocoder->learningRate =
+					learner->net->learningRate;
 			}
 
 			/* reset the error value */
@@ -362,4 +366,12 @@ void deeplearn_inputs_from_image(deeplearn * learner,
 								 int image_width, int image_height)
 {
 	bp_inputs_from_image(learner->net, img, image_width, image_height);
+}
+
+void deeplearn_set_learning_rate(deeplearn * learner, float rate)
+{
+	learner->net->learningRate = rate;
+	if (learner->autocoder != 0) {
+		learner->autocoder->learningRate = rate;
+	}
 }
