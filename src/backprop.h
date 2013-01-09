@@ -44,7 +44,7 @@ struct backprop {
 	bp_neuron *** hiddens;
 	bp_neuron ** outputs;
 	float BPerrorTotal;
-	float BPerror;
+	float BPerror, BPerrorAverage;
 	float learningRate;
 	float noise;
 	unsigned int random_seed;

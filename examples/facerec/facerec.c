@@ -33,8 +33,8 @@
 #include "libdeep/deeplearn_images.h"
 
 /* the dimensions of each face image */
-int image_width = 80;
-int image_height = 80;
+int image_width = 32;
+int image_height = 32;
 
 /* the number of face images */
 int no_of_images;
@@ -53,7 +53,7 @@ static void facerec_training()
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.0001f;
+	float max_backprop_error = 0.01f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
@@ -81,7 +81,7 @@ static void facerec_training()
 		itt++;
 		printf("%d: %.5f\n",
 			   learner.current_hidden_layer, learner.BPerror);
-		if ((itt % 200 == 0) && (itt>0)) {
+		if ((itt % 100 == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
@@ -124,7 +124,7 @@ static void facerec_training()
 
 		itt++;
 		printf("Final: %.5f\n",learner.BPerror);
-		if ((itt % 50 == 0) && (itt>0)) {
+		if ((itt % 100 == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,

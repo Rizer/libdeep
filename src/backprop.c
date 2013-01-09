@@ -43,6 +43,7 @@ void bp_init(bp * net,
 	net->noise = 0.0f;
 	net->random_seed = *random_seed;
 	net->BPerror = DEEPLEARN_UNKNOWN_ERROR;
+	net->BPerrorAverage = DEEPLEARN_UNKNOWN_ERROR;
 	net->BPerrorTotal = DEEPLEARN_UNKNOWN_ERROR;
   
 	net->NoOfInputs = no_of_inputs;
@@ -204,6 +205,16 @@ void bp_backprop(bp * net)
 
 	/* error on the output units */
 	net->BPerror = fabs(net->BPerrorTotal / net->NoOfOutputs);
+
+	/* update the running average */
+	if (net->BPerrorAverage == DEEPLEARN_UNKNOWN_ERROR) {
+		net->BPerrorAverage = net->BPerror;
+	}
+	else {
+		net->BPerrorAverage =
+			(net->BPerrorAverage*0.98f) +
+			(net->BPerror*0.02f);
+	}	
 
 	/* back-propogate through the hidden layers */
 	for (l = net->HiddenLayers-1; l >= 0; l--) {	
@@ -577,6 +588,9 @@ int bp_load(FILE * fp, bp * net,
 
 	net->learningRate = learning_rate;
 	net->noise = noise;
+	net->BPerrorAverage = DEEPLEARN_UNKNOWN_ERROR;
+	net->BPerror = DEEPLEARN_UNKNOWN_ERROR;
+	net->BPerrorTotal = DEEPLEARN_UNKNOWN_ERROR;
 
 	return retval;
 }

@@ -108,7 +108,7 @@ void deeplearn_update(deeplearn * learner,
 					learner->current_hidden_layer);
 
 		/* update the backprop error value */
-		learner->BPerror = learner->autocoder->BPerror;
+		learner->BPerror = learner->autocoder->BPerrorAverage;
 
 		/* if below the error threshold */
 		if (learner->BPerror < max_backprop_error) {
@@ -145,7 +145,7 @@ void deeplearn_update(deeplearn * learner,
 		bp_update(learner->net);
 
 		/* update the backprop error value */
-		learner->BPerror = learner->net->BPerror;
+		learner->BPerror = learner->net->BPerrorAverage;
 	}
 
 	/* record the history of error values */
