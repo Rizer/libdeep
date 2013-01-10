@@ -35,6 +35,7 @@ static void test_deeplearn_init()
 	int no_of_hiddens=4;
 	int hidden_layers=2;
 	int no_of_outputs=2;
+	float error_threshold[] = { 0.01f, 0.01f, 0.01f };
 	unsigned int random_seed = 123;
 
 	printf("test_deeplearn_init...");
@@ -43,7 +44,9 @@ static void test_deeplearn_init()
 	deeplearn_init(&learner,
 				   no_of_inputs, no_of_hiddens,
 				   hidden_layers,
-				   no_of_outputs, &random_seed);
+				   no_of_outputs,
+				   error_threshold,
+				   &random_seed);
 
 	assert((&learner)->net!=0);
 	assert((&learner)->autocoder!=0);
@@ -61,9 +64,9 @@ static void test_deeplearn_update()
 	int no_of_hiddens=4;
 	int hidden_layers=2;
 	int no_of_outputs=2;
+	float error_threshold[] = { 0.1f, 0.1f, 0.1f };
 	int itt,i,retval;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.1f;
 	float v,diff;
 	int itterations[3];
 	char filename[256];
@@ -79,7 +82,9 @@ static void test_deeplearn_update()
 	deeplearn_init(&learner,
 				   no_of_inputs, no_of_hiddens,
 				   hidden_layers,
-				   no_of_outputs, &random_seed);
+				   no_of_outputs,
+				   error_threshold,
+				   &random_seed);
 
 	assert((&learner)->net!=0);
 	assert((&learner)->autocoder!=0);
@@ -90,7 +95,7 @@ static void test_deeplearn_update()
 			deeplearn_set_input(&learner,i,
 								0.25f + (i*0.5f/(float)no_of_inputs));
 		}
-		deeplearn_update(&learner, max_backprop_error);
+		deeplearn_update(&learner);
 
 		itterations[learner.current_hidden_layer]++;
 
@@ -121,13 +126,9 @@ static void test_deeplearn_update()
 			deeplearn_set_output(&learner,i,
 								 1.0f - (i/(float)no_of_inputs));
 		}
-		deeplearn_update(&learner, max_backprop_error);
+		deeplearn_update(&learner);
 
 		itterations[learner.current_hidden_layer]++;
-
-		if (learner.BPerror < max_backprop_error) {
-			break;
-		}
 	}
 
 	/* test that it took some itterations to
@@ -185,6 +186,7 @@ static void test_deeplearn_save_load()
 	int no_of_hiddens=4;
 	int no_of_outputs=3;
 	int hidden_layers=3;
+	float error_threshold[] = { 0.01f, 0.01f, 0.01f, 0.01f };
 	int retval;
 	unsigned int random_seed = 123;
 	char filename[256];
@@ -196,6 +198,7 @@ static void test_deeplearn_save_load()
 	deeplearn_init(&learner1,
 				   no_of_inputs, no_of_hiddens,
 				   hidden_layers, no_of_outputs,
+				   error_threshold,
 				   &random_seed);
 
 	sprintf(filename,"%stemp_deep.dat",DEEPLEARN_TEMP_DIRECTORY);

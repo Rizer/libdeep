@@ -53,12 +53,12 @@ static void facerec_training()
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.01f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
 	int weights_image_width = 480;
 	int weights_image_height = 800;
+	float error_threshold[] = { 0.02f, 0.0001f,0.0001f,0.0001f,0.001f};
 	const int logging_interval = 1000;
 
 	sprintf(weights_filename,"%s","weights.png");
@@ -68,8 +68,9 @@ static void facerec_training()
 	deeplearn_init(&learner,
 				   no_of_inputs, no_of_hiddens,
 				   hidden_layers,
-				   no_of_outputs, &random_seed);
-
+				   no_of_outputs,
+				   error_threshold,
+				   &random_seed);
 
 	/* set learning rate */
 	deeplearn_set_learning_rate(&learner, 1.0f);
@@ -82,7 +83,7 @@ static void facerec_training()
 									images[rand_num(&random_seed)%no_of_images],
 									image_width, image_height);
 
-		deeplearn_update(&learner, max_backprop_error);
+		deeplearn_update(&learner);
 		itt++;
 		printf("%d: %.5f\n",
 			   learner.current_hidden_layer, learner.BPerror);
@@ -117,7 +118,7 @@ static void facerec_training()
 
 	/* perform the final training between the last
 	   hidden layer and the outputs */
-	while (learner.BPerror > max_backprop_error) {
+	while (learner.training_complete == 0) {
 		/* load the patch into the network inputs */
 		deeplearn_inputs_from_image(&learner,
 									images[rand_num(&random_seed)%no_of_images],
@@ -127,7 +128,7 @@ static void facerec_training()
 			deeplearn_set_output(&learner,i,
 								 1.0f - (i/(float)no_of_inputs));
 		}
-		deeplearn_update(&learner, max_backprop_error);
+		deeplearn_update(&learner);
 
 		itt++;
 		printf("Final: %.5f\n",learner.BPerror);
@@ -197,7 +198,7 @@ int main(int argc, char* argv[])
 
 	/* load training images into an array */
 	no_of_images =
-		deeplearn_load_training_images("images2", &images,
+		deeplearn_load_training_images("images", &images,
 									   image_width, image_height);
 	
 	printf("No of images: %d\n", no_of_images);

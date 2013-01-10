@@ -63,8 +63,19 @@ void deeplearn_init(deeplearn * learner,
 					int no_of_hiddens,
 					int hidden_layers,
 					int no_of_outputs,
+					float error_threshold[],
 					unsigned int * random_seed)
 {
+	/* has not been trained */
+	learner->training_complete = 0;
+
+	/* create the error thresholds for each layer */
+	learner->error_threshold =
+		(float*)malloc((hidden_layers+1)*sizeof(float));
+	memcpy((void*)learner->error_threshold,
+		   (void*)error_threshold,
+		   (hidden_layers+1)*sizeof(float));
+	
 	/* clear history */
 	learner->history_index = 0;
 	learner->history_ctr = 0;
@@ -99,9 +110,18 @@ void deeplearn_feed_forward(deeplearn * learner)
 	bp_feed_forward(learner->net);
 }
 
-void deeplearn_update(deeplearn * learner,
-					  float max_backprop_error)
+void deeplearn_update(deeplearn * learner)
 {
+	float max_backprop_error = 0;
+
+	/* only continue if training is not complete */
+	if (learner->training_complete == 1) return;
+
+	/* get the maximum backprop error after which a layer
+	   will be considered to have been trained */
+	max_backprop_error =
+		learner->error_threshold[learner->current_hidden_layer];
+
 	/* pretraining */
 	if (learner->current_hidden_layer <
 		learner->net->HiddenLayers) {
@@ -153,6 +173,11 @@ void deeplearn_update(deeplearn * learner,
 
 		/* update the backprop error value */
 		learner->BPerror = learner->net->BPerrorAverage;
+
+		/* set the training completed flag */
+		if (learner->BPerror < max_backprop_error) {
+			learner->training_complete = 1;
+		}
 	}
 
 	/* record the history of error values */
@@ -170,6 +195,9 @@ void deeplearn_free(deeplearn * learner)
 	/* free the learner */
 	bp_free(learner->net);
 	free(learner->net);
+
+	/* free the error thresholds */
+	free(learner->error_threshold);
 
 	/* free the autocoder */
 	if (learner->autocoder != 0) {
@@ -201,6 +229,7 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
 {
 	int retval,val;
 
+	retval = fwrite(&learner->training_complete, sizeof(int), 1, fp);
 	retval = fwrite(&learner->itterations, sizeof(unsigned int), 1, fp);
 	retval = fwrite(&learner->current_hidden_layer, sizeof(int), 1, fp);
 	retval = fwrite(&learner->BPerror, sizeof(float), 1, fp);
@@ -215,6 +244,10 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
 		val = 0;
 		retval = fwrite(&val, sizeof(int), 1, fp);
 	}
+
+	/* save error thresholds */
+	retval = fwrite(learner->error_threshold, sizeof(float),
+					learner->net->HiddenLayers+1, fp);
 
 	/* save the history */
 	retval = fwrite(&learner->history_index, sizeof(int), 1, fp);
@@ -232,6 +265,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 {
 	int retval,val=0;
 
+	retval = fread(&learner->training_complete, sizeof(int), 1, fp);
 	retval = fread(&learner->itterations, sizeof(unsigned int), 1, fp);
 	retval = fread(&learner->current_hidden_layer, sizeof(int), 1, fp);
 	retval = fread(&learner->BPerror, sizeof(float), 1, fp);
@@ -246,6 +280,13 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 	else {
 		learner->autocoder = 0;
 	}
+
+	/* load error thresholds */
+	learner->error_threshold =
+		(float*)malloc((learner->net->HiddenLayers+1)*
+					   sizeof(float));
+	retval = fread(learner->error_threshold, sizeof(float),
+				   learner->net->HiddenLayers+1, fp);
 
 	/* load the history */
 	retval = fread(&learner->history_index, sizeof(int), 1, fp);
@@ -298,6 +339,12 @@ int deeplearn_compare(deeplearn * learner1,
 	if (learner1->itterations !=
 		learner2->itterations) {
 		return -9;
+	}
+	for (i = 0; i < learner1->net->HiddenLayers+1; i++) {
+		if (learner1->error_threshold[i] !=
+			learner2->error_threshold[i]) {
+			return -10;
+		}
 	}
 	return 1;
 }

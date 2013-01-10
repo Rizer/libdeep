@@ -42,6 +42,8 @@ struct deepl {
 	int current_hidden_layer;
 	float BPerror;
 	unsigned int itterations;
+	float * error_threshold;
+	int training_complete;
 
 	float history[DEEPLEARN_HISTORY_SIZE];
 	int history_index, history_ctr, history_step;
@@ -53,9 +55,9 @@ void deeplearn_init(deeplearn * learner,
 					int no_of_hiddens,
 					int hidden_layers,
 					int no_of_outputs,
+					float error_threshold[],
 					unsigned int * random_seed);
-void deeplearn_update(deeplearn * learner,
-					  float max_backprop_error);
+void deeplearn_update(deeplearn * learner);
 void deeplearn_free(deeplearn * learner);
 void deeplearn_set_input(deeplearn * learner, int index, float value);
 void deeplearn_set_output(deeplearn * learner, int index, float value);
