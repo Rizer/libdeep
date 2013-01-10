@@ -157,7 +157,7 @@ void bp_feed_forward_layers(bp * net, int layers)
 {  
 	int i,l;
 	bp_neuron * n;
-	int max = layers+1;
+	int max = layers;
 
 	if (layers >= net->HiddenLayers) {
 		max = net->HiddenLayers;
@@ -597,7 +597,6 @@ void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
 		   of the autocoder */
 		for (i = 0; i < net->NoOfHiddens; i++) {
 			hidden_value = bp_get_hidden(net, hidden_layer, i);
-			assert(hidden_value > 0);
 			bp_set_input(autocoder,i, hidden_value);
 		}
 	}
