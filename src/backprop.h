@@ -85,6 +85,7 @@ void bp_inputs_from_image(bp * net,
 						  int image_width, int image_height);
 void bp_plot_weights(bp * net,
 					 char * filename,
-					 int image_width, int image_height);
+					 int image_width, int image_height,
+					 int input_image_width);
 
 #endif

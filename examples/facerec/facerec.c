@@ -53,7 +53,7 @@ static void facerec_training()
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.001f;
+	float max_backprop_error = 0.01f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
@@ -97,7 +97,8 @@ static void facerec_training()
 				bp_plot_weights((&learner)->autocoder,
 								weights_filename,
 								weights_image_width,
-								weights_image_height);
+								weights_image_height,
+								image_width);
 			}
 		}
 	}
@@ -111,7 +112,8 @@ static void facerec_training()
 	bp_plot_weights((&learner)->net,
 					weights_filename,
 					weights_image_width,
-					weights_image_height);
+					weights_image_height,
+					image_width);
 
 	/* perform the final training between the last
 	   hidden layer and the outputs */
@@ -140,7 +142,8 @@ static void facerec_training()
 				bp_plot_weights((&learner)->autocoder,
 								weights_filename,
 								weights_image_width,
-								weights_image_height);
+								weights_image_height,
+								image_width);
 			}
 		}
 	}
@@ -154,7 +157,8 @@ static void facerec_training()
 	bp_plot_weights((&learner)->net,
 					weights_filename,
 					weights_image_width,
-					weights_image_height);
+					weights_image_height,
+					image_width);
 }
 
 /* deallocate images */

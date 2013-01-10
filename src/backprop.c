@@ -313,7 +313,8 @@ void bp_inputs_from_image(bp * net,
 /* plots weight matrices within an image */
 void bp_plot_weights(bp * net,
 					 char * filename,
-					 int image_width, int image_height)
+					 int image_width, int image_height,
+					 int input_image_width)
 {
 	int layer, neurons_x, neurons_y, ty, by, h, x, y, ix, iy;
 	int wx, wy, inputs_x, inputs_y, n, i, unit, no_of_neurons;
@@ -333,7 +334,12 @@ void bp_plot_weights(bp * net,
 	neurons_y = (net->NoOfHiddens/neurons_x);
 
 	/* dimensions of the weight matrix */
-	inputs_x = (int)sqrt(net->NoOfInputs);
+	if (input_image_width <= 0) {
+		inputs_x = (int)sqrt(net->NoOfInputs);
+	}
+	else {
+		inputs_x = input_image_width;
+	}
 	inputs_y = (net->NoOfInputs/inputs_x);
 
 	no_of_weights = net->NoOfInputs;;
