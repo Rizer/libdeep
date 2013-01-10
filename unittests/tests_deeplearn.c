@@ -63,7 +63,8 @@ static void test_deeplearn_update()
 	int no_of_outputs=2;
 	int itt,i,retval;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.001f;
+	float max_backprop_error = 0.1f;
+	float v,diff;
 	int itterations[3];
 	char filename[256];
 	FILE * fp;
@@ -97,6 +98,11 @@ static void test_deeplearn_update()
 			break;
 		}
 	}
+	if (learner.current_hidden_layer < hidden_layers) {
+		printf("\nDidn't finish training (at layer %d)\nBPerror %.5f\n",
+			   learner.current_hidden_layer,learner.BPerror);
+	}
+	assert(learner.current_hidden_layer >= hidden_layers);
 
 	/* we expect that there will be some non-zero error */
 	assert(learner.BPerror!=0);
@@ -130,6 +136,13 @@ static void test_deeplearn_update()
 
 	/* we expect that there will be some non-zero error */
 	assert(learner.BPerror!=0);
+
+	/* check that there is some variation in the outputs */
+	v = deeplearn_get_output(&learner,0);
+	for (i = 1; i < no_of_outputs; i++) {
+		diff = fabs(v - deeplearn_get_output(&learner,i));
+		assert(diff > 0);
+	}
 
 	sprintf(filename,"%stemp_deep.dat",DEEPLEARN_TEMP_DIRECTORY);
 

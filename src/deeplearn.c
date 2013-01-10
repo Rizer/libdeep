@@ -70,6 +70,9 @@ void deeplearn_init(deeplearn * learner,
 	learner->history_ctr = 0;
 	learner->history_step = 1;
 
+	/* clear the number of training itterations */
+	learner->itterations = 0;
+
 	/* set the current layer being trained */
 	learner->current_hidden_layer = 0;
 	
@@ -110,8 +113,12 @@ void deeplearn_update(deeplearn * learner,
 		/* update the backprop error value */
 		learner->BPerror = learner->autocoder->BPerrorAverage;
 
-		/* if below the error threshold */
-		if (learner->BPerror < max_backprop_error) {
+		/* If below the error threshold.
+		   Only do this after a minimum number of itterations
+		   in order to allow the running average to stabilise */
+		if ((learner->BPerror < max_backprop_error) &&
+			(learner->autocoder->itterations > 100)) {
+
 			/* copy the hidden units */
 			bp_update_from_autocoder(learner->net,
 									 learner->autocoder,
@@ -134,10 +141,6 @@ void deeplearn_update(deeplearn * learner,
 				bp_create_autocoder(learner->net,
 									learner->current_hidden_layer,
 									learner->autocoder);
-
-				/* set the learning rate */
-				learner->autocoder->learningRate =
-					learner->net->learningRate;
 			}
 
 			/* reset the error value */
@@ -154,6 +157,11 @@ void deeplearn_update(deeplearn * learner,
 
 	/* record the history of error values */
 	deeplean_update_history(learner);
+
+	/* increment the number of itterations */
+	if (learner->net->itterations < UINT_MAX) {
+		learner->net->itterations++;
+	}
 }
 
 /* free the deep learner's allocated memory */
@@ -193,6 +201,7 @@ int deeplearn_save(FILE * fp, deeplearn * learner)
 {
 	int retval,val;
 
+	retval = fwrite(&learner->itterations, sizeof(unsigned int), 1, fp);
 	retval = fwrite(&learner->current_hidden_layer, sizeof(int), 1, fp);
 	retval = fwrite(&learner->BPerror, sizeof(float), 1, fp);
 
@@ -223,6 +232,7 @@ int deeplearn_load(FILE * fp, deeplearn * learner,
 {
 	int retval,val=0;
 
+	retval = fread(&learner->itterations, sizeof(unsigned int), 1, fp);
 	retval = fread(&learner->current_hidden_layer, sizeof(int), 1, fp);
 	retval = fread(&learner->BPerror, sizeof(float), 1, fp);
 
@@ -284,6 +294,10 @@ int deeplearn_compare(deeplearn * learner1,
 			learner2->history[i]) {
 			return -8;
 		}
+	}
+	if (learner1->itterations !=
+		learner2->itterations) {
+		return -9;
 	}
 	return 1;
 }
@@ -373,5 +387,13 @@ void deeplearn_set_learning_rate(deeplearn * learner, float rate)
 	learner->net->learningRate = rate;
 	if (learner->autocoder != 0) {
 		learner->autocoder->learningRate = rate;
+	}
+}
+
+void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent)
+{
+	learner->net->DropoutPercent = dropout_percent;
+	if (learner->autocoder != 0) {
+		learner->autocoder->DropoutPercent = dropout_percent;
 	}
 }

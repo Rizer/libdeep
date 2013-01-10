@@ -48,17 +48,18 @@ deeplearn learner;
 static void facerec_training()
 {
 	int no_of_inputs = image_width*image_height;
-	int no_of_hiddens = 8*8;
+	int no_of_hiddens = 5*5;
 	int hidden_layers=4;
 	int no_of_outputs=3*3;
 	int itt,i;
 	unsigned int random_seed = 123;
-	float max_backprop_error = 0.0001f;
+	float max_backprop_error = 0.001f;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
 	int weights_image_width = 480;
 	int weights_image_height = 800;
+	const int logging_interval = 1000;
 
 	sprintf(weights_filename,"%s","weights.png");
 	sprintf(title, "%s", "Face Image Training");
@@ -71,7 +72,7 @@ static void facerec_training()
 
 
 	/* set learning rate */
-	deeplearn_set_learning_rate(&learner, 0.5f);
+	deeplearn_set_learning_rate(&learner, 1.0f);
 
 	/* perform pre-training with an autocoder */
 	itt = 0;
@@ -85,7 +86,7 @@ static void facerec_training()
 		itt++;
 		printf("%d: %.5f\n",
 			   learner.current_hidden_layer, learner.BPerror);
-		if ((itt % 500 == 0) && (itt>0)) {
+		if ((itt % logging_interval == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
@@ -128,7 +129,7 @@ static void facerec_training()
 
 		itt++;
 		printf("Final: %.5f\n",learner.BPerror);
-		if ((itt % 500 == 0) && (itt>0)) {
+		if ((itt % logging_interval == 0) && (itt>0)) {
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
@@ -192,7 +193,7 @@ int main(int argc, char* argv[])
 
 	/* load training images into an array */
 	no_of_images =
-		deeplearn_load_training_images("images", &images,
+		deeplearn_load_training_images("images2", &images,
 									   image_width, image_height);
 	
 	printf("No of images: %d\n", no_of_images);

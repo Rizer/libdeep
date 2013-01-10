@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "globals.h"
 #include "deeplearn_random.h"
 #include "deeplearn_images.h"
@@ -40,6 +41,7 @@
 struct backprop {
 	int NoOfInputs,NoOfHiddens,NoOfOutputs;
 	int HiddenLayers;
+	float DropoutPercent;
 	bp_neuron ** inputs;
 	bp_neuron *** hiddens;
 	bp_neuron ** outputs;
@@ -48,6 +50,7 @@ struct backprop {
 	float learningRate;
 	float noise;
 	unsigned int random_seed;
+	unsigned int itterations;
 };
 typedef struct backprop bp;
 

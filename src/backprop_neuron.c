@@ -99,6 +99,7 @@ void bp_neuron_init(bp_neuron * n,
 	n->desiredValue = -1;
 	n->value = 0;
 	n->BPerror = 0;
+	n->excluded = 0;
 
 	/* clear the input pointers */
 	for (i = 0; i < no_of_inputs; i++) {
@@ -158,9 +159,13 @@ void bp_neuron_feedForward(bp_neuron * n,
 						   float noise,
 						   unsigned int * random_seed)
 {
-	float adder = n->bias;
+	float adder;
 	int i;
   
+	if (n->excluded > 0) return;
+
+	adder = n->bias;
+
 	for (i = 0; i < n->NoOfInputs; i++) {
 		if (n->inputs[i] != 0) {
 			adder += n->weights[i] * n->inputs[i]->value;
@@ -182,6 +187,8 @@ void bp_neuron_backprop(bp_neuron * n)
 	int i;
 	bp_neuron * nrn;
 	float afact;
+
+	if (n->excluded > 0) return;
   
 	if (n->desiredValue > -1) {
 		/* output unit */
@@ -193,7 +200,8 @@ void bp_neuron_backprop(bp_neuron * n)
 	for (i = 0; i < n->NoOfInputs; i++) {
 		nrn = n->inputs[i];
 		if (nrn != 0) {
-			nrn->BPerror += (n->BPerror * afact * n->weights[i]);
+			nrn->BPerror +=
+				(n->BPerror * afact * n->weights[i]);
 		}
 	}
 }
@@ -205,6 +213,8 @@ void bp_neuron_learn(bp_neuron * n,
 {
 	int i;
 	float afact,e,gradient;
+
+	if (n->excluded > 0) return;
 
 	e = learningRate / (1.0f + n->NoOfInputs);
 	afact = af(n->value);
@@ -274,6 +284,7 @@ int bp_neuron_load(FILE * fp, bp_neuron * n)
 
 	n->value = 0;
 	n->BPerror = 0;
+	n->excluded = 0;
 
 	return retval;
 }

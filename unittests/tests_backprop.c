@@ -375,6 +375,57 @@ static void test_backprop_training()
 	printf("Ok\n");
 }
 
+static void test_backprop_autocoder()
+{
+	bp autocoder;
+	int itt,i,j;
+	int no_of_inputs=10;
+	int no_of_hiddens=4;
+	int no_of_outputs=10;
+	unsigned int random_seed = 123;
+	float tot;
+
+	printf("test_backprop_autocoder...");
+
+	/* create the autocoder */
+	bp_init(&autocoder,
+			no_of_inputs,
+			no_of_hiddens,1,
+			no_of_outputs,
+			&random_seed);
+
+	autocoder.learningRate = 0.5f;
+
+	/* run the autocoder for some itterations */
+	for (itt = 0; itt < 100; itt++) {
+		/* set the inputs */
+		for (i = 0; i < no_of_inputs; i++) {
+			bp_set_input(&autocoder,i,0.25f + (i*0.5f/(float)no_of_inputs));
+			bp_set_output(&autocoder,i,0.75f - (i*0.5f/(float)no_of_inputs));
+		}
+		/* update */
+		bp_update(&autocoder);
+	}
+
+	for (i = 0; i < no_of_hiddens; i++) {
+		/* check that some errors have been back-propogated */
+		assert((&autocoder)->hiddens[0][i]->BPerror != 0);
+		/* check that weights have changed */
+		tot = 0;
+		for (j = 0; j < no_of_inputs; j++) {
+			assert((&autocoder)->hiddens[0][i]->lastWeightChange[j]!=0);
+			tot += fabs((&autocoder)->hiddens[0][i]->lastWeightChange[j]);
+		}
+		/* total weight change */
+		assert(tot > 0.00001f);
+	}
+
+	bp_free(&autocoder);
+
+	printf("Ok\n");
+}
+
+
 static void test_backprop_deep()
 {
 	bp net;
@@ -520,6 +571,7 @@ int run_tests_backprop()
 	test_backprop_neuron_save_load();
 	test_backprop_save_load();
 	test_backprop_inputs_from_image();
+	test_backprop_autocoder();
 
 	printf("All backprop tests completed\n");
 	return 1;

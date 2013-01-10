@@ -45,6 +45,8 @@ void bp_init(bp * net,
 	net->BPerror = DEEPLEARN_UNKNOWN_ERROR;
 	net->BPerrorAverage = DEEPLEARN_UNKNOWN_ERROR;
 	net->BPerrorTotal = DEEPLEARN_UNKNOWN_ERROR;
+	net->itterations = 0;
+	net->DropoutPercent = 20;
   
 	net->NoOfInputs = no_of_inputs;
 	net->inputs = (bp_neuron**)malloc(no_of_inputs*sizeof(bp_neuron*));
@@ -228,7 +230,12 @@ void bp_backprop(bp * net)
 	/* overall average error */
 	net->BPerrorTotal =
 		fabs(net->BPerrorTotal /
-			 (net->NoOfOutputs + net->NoOfHiddens)); 
+			 (net->NoOfOutputs + net->NoOfHiddens));
+
+	/* increment the number of training itterations */
+	if (net->itterations < UINT_MAX) {
+		net->itterations++;
+	}
 }
 
 /* adjust connection weights and bias values */
@@ -397,6 +404,12 @@ void bp_plot_weights(bp * net,
 							img[n+1] = img[n];
 							img[n+2] = img[n];
 						}
+						else {
+							img[n] =
+								(int)(curr_neuron->weights[i]*255);
+							img[n+1] = img[n];
+							img[n+2] = img[n];
+						}
 					}
 				}
 			}
@@ -470,12 +483,50 @@ float bp_get_output(bp * net, int index)
 	return n->value;
 }
 
+/* clears the exclusion flags on neurons which have dropped out */
+static void bp_clear_dropouts(bp * net)
+{
+	int l,i;
+
+	if (net->DropoutPercent==0) return;
+
+	/* clear exclusions */
+	for (l = 0; l < net->HiddenLayers; l++) {
+		for (i = 0; i < net->NoOfHiddens; i++) {
+			net->hiddens[l][i]->excluded = 0;
+		}
+	}
+}
+
+/* sets exclusion flags to cause neurons to drop out */
+static void bp_dropouts(bp * net)
+{
+	int l,i,no_of_dropouts,hidden_units,n;
+
+	if (net->DropoutPercent==0) return;
+
+	/* total number of hidden units */
+	hidden_units = net->HiddenLayers * net->NoOfHiddens;
+
+	/* total number of dropouts */
+	no_of_dropouts = net->DropoutPercent*hidden_units/100;
+
+	/* set the exclusion flags */
+	for (n = 0; n < no_of_dropouts; n++) {
+		l = rand_num(&net->random_seed)%net->HiddenLayers;
+		i = rand_num(&net->random_seed)%net->NoOfHiddens;
+		net->hiddens[l][i]->excluded = 1;
+	}
+}
+
 void bp_update(bp * net)
 {
+	bp_dropouts(net);
 	bp_feed_forward(net);
     bp_backprop(net);
 	bp_learn(net);
-}  
+	bp_clear_dropouts(net);
+}
 
 static void bp_update_autocoder(bp * net)
 {
@@ -516,6 +567,9 @@ void bp_create_autocoder(bp * net, int hidden_layer, bp * autocoder)
 			net->NoOfHiddens,1,
 			no_of_inputs,
 			&net->random_seed);
+
+	autocoder->DropoutPercent = net->DropoutPercent;
+	autocoder->learningRate = net->learningRate;
 }
 
 /* pre-trains a hidden layer using an autocoder */
@@ -562,12 +616,15 @@ int bp_save(FILE * fp, bp * net)
 {
 	int retval,i,l;
 
+	retval = fwrite(&net->itterations, sizeof(unsigned int), 1, fp);
 	retval = fwrite(&net->NoOfInputs, sizeof(int), 1, fp);
 	retval = fwrite(&net->NoOfHiddens, sizeof(int), 1, fp);
 	retval = fwrite(&net->NoOfOutputs, sizeof(int), 1, fp);
 	retval = fwrite(&net->HiddenLayers, sizeof(int), 1, fp);
 	retval = fwrite(&net->learningRate, sizeof(float), 1, fp);
 	retval = fwrite(&net->noise, sizeof(float), 1, fp);
+	retval = fwrite(&net->BPerrorAverage, sizeof(float), 1, fp);
+	retval = fwrite(&net->DropoutPercent, sizeof(float), 1, fp);
 
 	for (l = 0; l < net->HiddenLayers; l++) {
 		for (i = 0; i < net->NoOfHiddens; i++) {
@@ -588,14 +645,19 @@ int bp_load(FILE * fp, bp * net,
 	int retval,i,l;
 	int no_of_inputs=0, no_of_hiddens=0, no_of_outputs=0;
 	int hidden_layers=0;
-	float learning_rate=0, noise=0;
+	float learning_rate=0, noise=0, BPerrorAverage=0;
+	float DropoutPercent=0;
+	unsigned int itterations=0;
 
+	retval = fread(&itterations, sizeof(unsigned int), 1, fp);
 	retval = fread(&no_of_inputs, sizeof(int), 1, fp);
 	retval = fread(&no_of_hiddens, sizeof(int), 1, fp);
 	retval = fread(&no_of_outputs, sizeof(int), 1, fp);
 	retval = fread(&hidden_layers, sizeof(int), 1, fp);
 	retval = fread(&learning_rate, sizeof(float), 1, fp);
 	retval = fread(&noise, sizeof(float), 1, fp);
+	retval = fread(&BPerrorAverage, sizeof(float), 1, fp);
+	retval = fread(&DropoutPercent, sizeof(float), 1, fp);
 
 	bp_init(net, no_of_inputs, no_of_hiddens,
 			hidden_layers, no_of_outputs,
@@ -612,9 +674,11 @@ int bp_load(FILE * fp, bp * net,
 
 	net->learningRate = learning_rate;
 	net->noise = noise;
-	net->BPerrorAverage = DEEPLEARN_UNKNOWN_ERROR;
-	net->BPerror = DEEPLEARN_UNKNOWN_ERROR;
-	net->BPerrorTotal = DEEPLEARN_UNKNOWN_ERROR;
+	net->BPerrorAverage = BPerrorAverage;
+	net->BPerror = BPerrorAverage;
+	net->BPerrorTotal = BPerrorAverage;
+	net->itterations = itterations;
+	net->DropoutPercent = DropoutPercent;
 
 	return retval;
 }
@@ -654,6 +718,15 @@ int bp_compare(bp * net1, bp * net2)
 	for (i = 0; i < net1->NoOfOutputs; i++) {
 		retval = bp_neuron_compare(net1->outputs[i], net2->outputs[i]);
 		if (retval == 0) return -8;
+	}
+	if (net1->itterations != net2->itterations) {
+		return -9;
+	}
+	if (net1->BPerrorAverage != net2->BPerrorAverage) {
+		return -9;
+	}
+	if (net1->DropoutPercent!= net2->DropoutPercent) {
+		return -10;
 	}
 	return 1;
 }

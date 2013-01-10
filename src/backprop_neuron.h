@@ -50,6 +50,7 @@ struct bp_n {
 	float bias;
 	float lastBiasChange;
 	float BPerror;
+	int excluded;
 
 	float value;
 	float desiredValue;
@@ -73,5 +74,6 @@ void bp_neuron_copy(bp_neuron * source,
 int bp_neuron_save(FILE * fp, bp_neuron * n);
 int bp_neuron_load(FILE * fp, bp_neuron * n);
 int bp_neuron_compare(bp_neuron * n1, bp_neuron * n2);
+void bp_neuron_fix_weights(bp_neuron * n);
 
 #endif

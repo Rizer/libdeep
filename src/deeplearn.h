@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "globals.h"
 #include "backprop.h"
 
@@ -40,6 +41,7 @@ struct deepl {
 	bp * autocoder;
 	int current_hidden_layer;
 	float BPerror;
+	unsigned int itterations;
 
 	float history[DEEPLEARN_HISTORY_SIZE];
 	int history_index, history_ctr, history_step;
@@ -74,5 +76,6 @@ void deeplearn_inputs_from_image(deeplearn * learner,
 								 unsigned char * img,
 								 int image_width, int image_height);
 void deeplearn_set_learning_rate(deeplearn * learner, float rate);
+void deeplearn_set_dropouts(deeplearn * learner, float dropout_percent);
 
 #endif
