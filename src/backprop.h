@@ -87,5 +87,7 @@ void bp_plot_weights(bp * net,
 					 char * filename,
 					 int image_width, int image_height,
 					 int input_image_width);
+void bp_get_classification_from_filename(char * filename,
+										 char * classification);
 
 #endif

@@ -46,7 +46,7 @@
 
 #define PNG_DEBUG 3
 #include <png.h>
-
+#include "backprop.h"
 
 void deeplearn_read_png(char * filename,
 						int * width, int * height,
@@ -56,6 +56,7 @@ int deeplearn_write_png(char* filename,
 						unsigned char *buffer);
 int deeplearn_load_training_images(char * images_directory,
 								   unsigned char *** images,
+								   char *** classifications,
 								   int width, int height);
 void bp_plot_images(unsigned char **images,
 					int no_of_images,

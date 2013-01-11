@@ -252,6 +252,7 @@ static void deeplearn_downsample(unsigned char * img,
 
 int deeplearn_load_training_images(char * images_directory,
 								   unsigned char *** images,
+								   char *** classifications,
 								   int width, int height)
 {
 	int ctr,no_of_images = 0;
@@ -260,6 +261,7 @@ int deeplearn_load_training_images(char * images_directory,
 	unsigned char * img, * downsampled;
 	char * extension = "png";
 	char filename[256];
+	char * classification;
 
 	/* how many images are there? */
 	no_of_images = number_of_images(images_directory, extension);
@@ -271,6 +273,10 @@ int deeplearn_load_training_images(char * images_directory,
 	*images =
 		(unsigned char**)malloc(no_of_images*
 								sizeof(unsigned char*));
+
+	/* allocate memory for the classifications */
+	*classifications = (char**)malloc(no_of_images*
+									  sizeof(char*));
 
 	/* get image filenames */
 	no_of_images = 0;
@@ -312,6 +318,17 @@ int deeplearn_load_training_images(char * images_directory,
 					else {
 						(*images)[no_of_images] = NULL;
 					}
+
+					/* allocate memory for the classification */
+					classification =
+						(char*)malloc(256*
+									  sizeof(char));
+
+					/* get the name of the classification */
+					bp_get_classification_from_filename(filename,
+														classification);
+					(*classifications)[no_of_images] = classification;
+
 					no_of_images++;
 				}
 			}

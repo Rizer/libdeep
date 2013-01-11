@@ -737,3 +737,26 @@ int bp_compare(bp * net1, bp * net2)
 	}
 	return 1;
 }
+
+/* Extract the classification from the filename.
+   This assumes a filename of the type class.instance.extension
+*/
+void bp_get_classification_from_filename(char * filename,
+										 char * classification)
+{
+	int i,start=0;
+
+	classification[0] = 0;
+
+	for (i = 0; i < strlen(filename); i++) {
+		if (filename[i] == '/') {
+			start = i+1;
+		}
+	}
+
+	for (i = start; i < strlen(filename); i++) {
+		if (filename[i] == '.') break;
+		classification[i-start] = filename[i];		
+	}
+	classification[i-start] = 0;
+}

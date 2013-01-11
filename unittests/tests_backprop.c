@@ -556,6 +556,21 @@ static void test_backprop_save_load()
 	printf("Ok\n");
 }
 
+static void test_backprop_classification_from_filename()
+{
+	char classification[256];
+
+	printf("test_backprop_classification_from_filename...");
+
+	bp_get_classification_from_filename("class.number.png",
+										classification);
+	assert(strcmp(classification,"class")==0);
+	bp_get_classification_from_filename("/my/directory/test.number.png",
+										classification);
+	assert(strcmp(classification,"test")==0);
+	printf("Ok\n");
+}
+
 int run_tests_backprop()
 {
 	printf("\nRunning backprop tests\n");
@@ -572,6 +587,7 @@ int run_tests_backprop()
 	test_backprop_save_load();
 	test_backprop_inputs_from_image();
 	test_backprop_autocoder();
+	test_backprop_classification_from_filename();
 
 	printf("All backprop tests completed\n");
 	return 1;
