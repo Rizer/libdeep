@@ -157,23 +157,19 @@ void bp_feed_forward_layers(bp * net, int layers)
 {  
 	int i,l;
 	bp_neuron * n;
-	int max = layers;
 
-	if (layers >= net->HiddenLayers) {
-		max = net->HiddenLayers;
-	}
-
-	for (l = 0; l < max; l++) {	
-		for (i = 0; i < net->NoOfHiddens; i++) {
-			n = net->hiddens[l][i];
-			bp_neuron_feedForward(n, net->noise, &net->random_seed);
+	for (l = 0; l < layers; l++) {	
+		if (l < net->HiddenLayers) {
+			for (i = 0; i < net->NoOfHiddens; i++) {
+				n = net->hiddens[l][i];
+				bp_neuron_feedForward(n, net->noise, &net->random_seed);
+			}
 		}
-	}
-
-	if (layers >= net->HiddenLayers) {
-		for (i = 0; i < net->NoOfOutputs; i++) {
-			n = net->outputs[i];
-			bp_neuron_feedForward(n, net->noise, &net->random_seed);
+		else {
+			for (i = 0; i < net->NoOfOutputs; i++) {
+				n = net->outputs[i];
+				bp_neuron_feedForward(n, net->noise, &net->random_seed);
+			}
 		}
 	}
 }
@@ -551,7 +547,9 @@ static void bp_update_autocoder(bp * net)
 }  
 
 /* coppies the hidden layer from the autocoder to the main network */
-void bp_update_from_autocoder(bp * net, bp * autocoder, int hidden_layer)
+void bp_update_from_autocoder(bp * net,
+							  bp * autocoder,
+							  int hidden_layer)
 {
 	int i;
 
@@ -562,11 +560,15 @@ void bp_update_from_autocoder(bp * net, bp * autocoder, int hidden_layer)
 }
 
 /* generates an autocoder for the given layer */
-void bp_create_autocoder(bp * net, int hidden_layer, bp * autocoder)
+void bp_create_autocoder(bp * net,
+						 int hidden_layer,
+						 bp * autocoder)
 {
 	int no_of_inputs = net->NoOfHiddens;
 
-	if (hidden_layer==0) no_of_inputs = net->NoOfInputs;
+	if (hidden_layer == 0) {
+		no_of_inputs = net->NoOfInputs;
+	}
 
 	bp_init(autocoder,
 			no_of_inputs,
@@ -579,15 +581,15 @@ void bp_create_autocoder(bp * net, int hidden_layer, bp * autocoder)
 }
 
 /* pre-trains a hidden layer using an autocoder */
-void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
+void bp_pretrain(bp * net,
+				 bp * autocoder,
+				 int hidden_layer)
 {
 	int i;
 	float hidden_value;
 
 	/* feed forward to the given hidden layer */
-	if (hidden_layer > 0) {
-		bp_feed_forward_layers(net, hidden_layer);
-	}
+	bp_feed_forward_layers(net, hidden_layer);
 
 	if (hidden_layer > 0) {
 		/* check that the number of inputs is valid */
@@ -596,7 +598,7 @@ void bp_pretrain(bp * net, bp * autocoder, int hidden_layer)
 		/* copy the hidden unit values to the inputs
 		   of the autocoder */
 		for (i = 0; i < net->NoOfHiddens; i++) {
-			hidden_value = bp_get_hidden(net, hidden_layer, i);
+			hidden_value = bp_get_hidden(net, hidden_layer-1, i);
 			bp_set_input(autocoder,i, hidden_value);
 		}
 	}

@@ -58,7 +58,7 @@ static void facerec_training()
 	char weights_filename[256];
 	int weights_image_width = 480;
 	int weights_image_height = 800;
-	float error_threshold[] = { 0.02f, 0.0001f,0.0001f,0.0001f,0.001f};
+	float error_threshold[] = { 0.01f, 0.02f,0.02f,0.02f,0.02f};
 	const int logging_interval = 1000;
 
 	sprintf(weights_filename,"%s","weights.png");
@@ -83,11 +83,13 @@ static void facerec_training()
 									images[rand_num(&random_seed)%no_of_images],
 									image_width, image_height);
 
+
 		deeplearn_update(&learner);
 		itt++;
-		printf("%d: %.5f\n",
-			   learner.current_hidden_layer, learner.BPerror);
 		if ((itt % logging_interval == 0) && (itt>0)) {
+			printf("%d: %.5f\n",
+				   learner.current_hidden_layer, learner.BPerror);
+
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
@@ -95,11 +97,20 @@ static void facerec_training()
 								   1024, 480);
 			/* plot the weights */
 			if ((&learner)->autocoder != 0) {
-				bp_plot_weights((&learner)->autocoder,
-								weights_filename,
-								weights_image_width,
-								weights_image_height,
-								image_width);
+				if (learner.current_hidden_layer==0) {
+					bp_plot_weights((&learner)->autocoder,
+									weights_filename,
+									weights_image_width,
+									weights_image_height,
+									image_width);
+				}
+				else {
+					bp_plot_weights((&learner)->autocoder,
+									weights_filename,
+									weights_image_width,
+									weights_image_height,
+									0);
+				}
 			}
 		}
 	}
@@ -131,8 +142,9 @@ static void facerec_training()
 		deeplearn_update(&learner);
 
 		itt++;
-		printf("Final: %.5f\n",learner.BPerror);
 		if ((itt % logging_interval == 0) && (itt>0)) {
+			printf("Final: %.5f\n",learner.BPerror);
+
 			/* save a graph */
 			sprintf(filename,"%s","training_error.png");
 			deeplearn_plot_history(&learner,
