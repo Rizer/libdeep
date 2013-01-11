@@ -571,6 +571,25 @@ static void test_backprop_classification_from_filename()
 	printf("Ok\n");
 }
 
+static void test_backprop_classifications_to_numbers()
+{
+	char * classifications[] = {
+		"face7", "face1", "face7", "face10", "face10", "face1" };
+	int numbers[6];
+
+	printf("test_backprop_classifications_to_numbers...");
+
+	bp_classifications_to_numbers(6, classifications, numbers);
+	assert(numbers[0] == 0);
+	assert(numbers[1] == 1);
+	assert(numbers[2] == 0);
+	assert(numbers[3] == 2);
+	assert(numbers[4] == 2);
+	assert(numbers[5] == 1);
+
+	printf("Ok\n");
+}
+
 int run_tests_backprop()
 {
 	printf("\nRunning backprop tests\n");
@@ -588,6 +607,7 @@ int run_tests_backprop()
 	test_backprop_inputs_from_image();
 	test_backprop_autocoder();
 	test_backprop_classification_from_filename();
+	test_backprop_classifications_to_numbers();
 
 	printf("All backprop tests completed\n");
 	return 1;

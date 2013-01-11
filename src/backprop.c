@@ -760,3 +760,45 @@ void bp_get_classification_from_filename(char * filename,
 	}
 	classification[i-start] = 0;
 }
+
+/* takes a set of classification labels for each instance within
+   a training/test set and produces an array of numbers corresponding
+   to that */
+void bp_classifications_to_numbers(int no_of_instances,
+								   char ** instance_classification,
+								   int * numbers)
+{
+	int i,j;
+	int unique_ctr = 0;
+	char ** unique_classification;
+
+	/* allocate memory for a list of unique classifications */
+	unique_classification =
+		(char**)malloc(no_of_instances * sizeof(char*));
+
+	/* create a list of unique classification names */
+	for (i = 0; i < no_of_instances; i++) {
+		for (j = 0; j < unique_ctr; j++) {
+			if (strcmp(instance_classification[i],
+					   unique_classification[j])==0) {
+				numbers[i] = j;
+				break;
+			}
+		}
+		if (j == unique_ctr) {
+			unique_classification[unique_ctr] =
+				(char*)malloc((1+strlen(instance_classification[i]))*
+							  sizeof(char));
+			sprintf(unique_classification[unique_ctr],
+					"%s", instance_classification[i]);
+			numbers[i] = unique_ctr;
+			unique_ctr++;
+		}
+	}
+	
+	/* free memory */
+	for (i = 0; i < unique_ctr; i++) {
+		free(unique_classification[i]);
+	}
+	free(unique_classification);
+}

@@ -57,6 +57,7 @@ int deeplearn_write_png(char* filename,
 int deeplearn_load_training_images(char * images_directory,
 								   unsigned char *** images,
 								   char *** classifications,
+								   int ** classification_number,
 								   int width, int height);
 void bp_plot_images(unsigned char **images,
 					int no_of_images,

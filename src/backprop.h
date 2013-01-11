@@ -89,5 +89,8 @@ void bp_plot_weights(bp * net,
 					 int input_image_width);
 void bp_get_classification_from_filename(char * filename,
 										 char * classification);
+void bp_classifications_to_numbers(int no_of_instances,
+								   char ** instance_classification,
+								   int * numbers);
 
 #endif

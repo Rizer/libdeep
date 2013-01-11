@@ -253,6 +253,7 @@ static void deeplearn_downsample(unsigned char * img,
 int deeplearn_load_training_images(char * images_directory,
 								   unsigned char *** images,
 								   char *** classifications,
+								   int ** classification_number,
 								   int width, int height)
 {
 	int ctr,no_of_images = 0;
@@ -277,6 +278,9 @@ int deeplearn_load_training_images(char * images_directory,
 	/* allocate memory for the classifications */
 	*classifications = (char**)malloc(no_of_images*
 									  sizeof(char*));
+
+	/* allocate memory for the class number assigned to each image */
+	*classification_number = (int*)malloc(no_of_images * sizeof(int));
 
 	/* get image filenames */
 	no_of_images = 0;
@@ -336,6 +340,11 @@ int deeplearn_load_training_images(char * images_directory,
         }
         free(namelist);
     }
+
+	/* assign a class number to each image */
+	bp_classifications_to_numbers(no_of_images,
+								  *classifications,
+								  (*classification_number));
 
 	return no_of_images;
 }

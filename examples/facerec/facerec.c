@@ -45,23 +45,26 @@ unsigned char **images;
 /* image classification labels */
 char ** classifications;
 
+/* the classification number assigned to each image */
+int * class_number;
+
 deeplearn learner;
 
 /* train the deep learner */
 static void facerec_training()
 {
 	int no_of_inputs = image_width*image_height;
-	int no_of_hiddens = 5*5;
+	int no_of_hiddens = 6*6;
 	int hidden_layers=4;
-	int no_of_outputs=3*3;
-	int itt,i;
+	int no_of_outputs=5*5;
+	int itt,i,index;
 	unsigned int random_seed = 123;
 	char filename[256];
 	char title[256];
 	char weights_filename[256];
 	int weights_image_width = 480;
 	int weights_image_height = 800;
-	float error_threshold[] = { 0.01f, 0.02f,0.02f,0.02f,0.02f};
+	float error_threshold[] = { 0.01f, 0.01f,0.01f,0.01f,0.005f};
 	const int logging_interval = 1000;
 
 	sprintf(weights_filename,"%s","weights.png");
@@ -133,14 +136,19 @@ static void facerec_training()
 	/* perform the final training between the last
 	   hidden layer and the outputs */
 	while (learner.training_complete == 0) {
+		index = rand_num(&random_seed)%no_of_images;
 		/* load the patch into the network inputs */
 		deeplearn_inputs_from_image(&learner,
-									images[rand_num(&random_seed)%no_of_images],
+									images[index],
 									image_width, image_height);
 
 		for (i = 0; i < no_of_outputs; i++) {
-			deeplearn_set_output(&learner,i,
-								 1.0f - (i/(float)no_of_inputs));
+			if (i == class_number[index]) {
+				deeplearn_set_output(&learner,i, 0.8f);
+			}
+			else {
+				deeplearn_set_output(&learner,i, 0.2f);
+			}
 		}
 		deeplearn_update(&learner);
 
@@ -180,6 +188,7 @@ static void facerec_training()
 /* deallocate images */
 static void free_mem(unsigned char ** images,
 					 char ** classifications,
+					 int * class_number,
 					 int no_of_images)
 {
 	int i;
@@ -195,6 +204,7 @@ static void free_mem(unsigned char ** images,
 	}
 	free(images);
 	free(classifications);
+	free(class_number);
 
 	deeplearn_free(&learner);
 }
@@ -217,6 +227,7 @@ int main(int argc, char* argv[])
 	/* load training images into an array */
 	no_of_images =
 		deeplearn_load_training_images("images", &images, &classifications,
+									   &class_number,
 									   image_width, image_height);
 	
 	printf("No of images: %d\n", no_of_images);
@@ -225,7 +236,7 @@ int main(int argc, char* argv[])
 
 	facerec_training();
 
-	free_mem(images, classifications, no_of_images);
+	free_mem(images, classifications, class_number, no_of_images);
 	return 1;
 }
 

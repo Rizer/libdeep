@@ -119,6 +119,7 @@ static void test_load_training_images()
 	char filename[256];
 	unsigned char ** images=NULL;
 	char ** classifications=NULL;
+	int * numbers;
 	int im;
 	int no_of_images = 3;
 	int no_of_images2;
@@ -134,8 +135,8 @@ static void test_load_training_images()
 
 	/* save a tests images */
 	for (im = 0; im < no_of_images; im++) {
-		sprintf(filename,"%sdeeplearn_test_images/img%d.png",
-				DEEPLEARN_TEMP_DIRECTORY, im);
+		sprintf(filename,"%sdeeplearn_test_images/img%d.%d.png",
+				DEEPLEARN_TEMP_DIRECTORY, im%2, im);
 		save_image(filename);
 	}
 
@@ -147,6 +148,7 @@ static void test_load_training_images()
 		deeplearn_load_training_images(str,
 									   &images,
 									   &classifications,
+									   &numbers,
 									   width, height);
 	assert(no_of_images == no_of_images2);
 	assert(images!=NULL);
@@ -158,6 +160,7 @@ static void test_load_training_images()
 	}
 	free(images);
 	free(classifications);
+	free(numbers);
 
 	/* remove the images */
 	sprintf(commandstr,"rm -rf %sdeeplearn_test_images",
