@@ -42,6 +42,9 @@ int no_of_images;
 /* array storing the face images */
 unsigned char **images;
 
+/* image classification labels */
+char ** classifications;
+
 deeplearn learner;
 
 /* train the deep learner */
@@ -176,6 +179,7 @@ static void facerec_training()
 
 /* deallocate images */
 static void free_mem(unsigned char ** images,
+					 char ** classifications,
 					 int no_of_images)
 {
 	int i;
@@ -187,8 +191,10 @@ static void free_mem(unsigned char ** images,
 			free(images[i]);
 			images[i] = 0;
 		}
+		free(classifications[i]);
 	}
 	free(images);
+	free(classifications);
 
 	deeplearn_free(&learner);
 }
@@ -210,7 +216,7 @@ int main(int argc, char* argv[])
 
 	/* load training images into an array */
 	no_of_images =
-		deeplearn_load_training_images("images", &images,
+		deeplearn_load_training_images("images", &images, &classifications,
 									   image_width, image_height);
 	
 	printf("No of images: %d\n", no_of_images);
@@ -219,7 +225,7 @@ int main(int argc, char* argv[])
 
 	facerec_training();
 
-	free_mem(images, no_of_images);
+	free_mem(images, classifications, no_of_images);
 	return 1;
 }
 
