@@ -57,6 +57,7 @@ void deeplearn_init(deeplearn * learner,
 					int no_of_outputs,
 					float error_threshold[],
 					unsigned int * random_seed);
+void deeplearn_feed_forward(deeplearn * learner);
 void deeplearn_update(deeplearn * learner);
 void deeplearn_free(deeplearn * learner);
 void deeplearn_set_input(deeplearn * learner, int index, float value);
