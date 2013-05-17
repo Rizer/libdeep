@@ -14,7 +14,7 @@ License: BSD
 Group: libs
 SOURCE0 : %{name}-%{version}.tar.gz
 URL: https://launchpad.net/libdeep
-Packager: Bob Mottram <bob@sluggish.dyndns.org>
+Packager: Bob Mottram <bob@robotics.uk.to>
 Requires: gnuplot
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
@@ -44,6 +44,6 @@ rm -rf %{buildroot}
 %attr(644,root,root) /usr/share/man/man1/%{name}.1.gz
 
 %changelog
-* Thu Jan 5 2013  Bob Mottram <bob@sluggish.dyndns.org>
+* Thu Jan 5 2013  Bob Mottram <bob@robotics.uk.to>
 - Spec file created
 

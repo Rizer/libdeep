@@ -3,11 +3,11 @@ Upstream-Name: libdeep
 Source: https://code.launchpad.net/libdeep
 
 Files: *
-Copyright: 2013 Bob Mottram <bob@sluggish.dyndns.org>
+Copyright: 2013 Bob Mottram <bob@robotics.uk.to>
 License: BSD-3-Clause
 
 Files: debian/*
-Copyright: 2013 Bob Mottram <bob@sluggish.dyndns.org>
+Copyright: 2013 Bob Mottram <bob@robotics.uk.to>
 License: BSD-3-Clause
 
 License: BSD-3-Clause

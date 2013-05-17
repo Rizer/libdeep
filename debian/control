@@ -1,6 +1,6 @@
 Source: libdeep
 Priority: extra
-Maintainer: Bob Mottram <bob@sluggish.dyndns.org>
+Maintainer: Bob Mottram <bob@robotics.uk.to>
 Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.8.4
 Section: libs
